@@ -1,0 +1,31 @@
+version: "3.8"
+services:
+  backend:
+    env_file:
+      - .env
+    container_name: TheTinder
+    depends_on:
+      db:
+        condition: service_started
+    ports:
+      - "8000:8000"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./configs:/out/configs
+      - ./.env:/out/.env
+    restart: always
+
+  db:
+    env_file:
+      - .env
+    image: postgres:15
+    container_name: TheTinder-db
+    ports:
+      - "5438:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    restart: always
