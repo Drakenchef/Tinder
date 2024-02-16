@@ -20,13 +20,13 @@ type AuthUsecase struct {
 	authRepo *auth.AuthRepo
 }
 
+func NewAuthUsecase(authRepo *auth.AuthRepo) *AuthUsecase {
+	return &AuthUsecase{authRepo: authRepo}
+}
+
 type tokenClaims struct {
 	jwt.StandardClaims
 	UID int `json:"uid"`
-}
-
-func NewAuthUsecase(authRepo *auth.AuthRepo) *AuthUsecase {
-	return &AuthUsecase{authRepo: authRepo}
 }
 
 func (u *AuthUsecase) CreateUser(user models.User) error {

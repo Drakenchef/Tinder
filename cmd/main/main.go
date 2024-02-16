@@ -7,6 +7,10 @@ import (
 	authHandler "github.com/drakenchef/Tinder/internal/pkg/auth/delivery/http"
 	authRepo "github.com/drakenchef/Tinder/internal/pkg/auth/repo"
 	authUsecase "github.com/drakenchef/Tinder/internal/pkg/auth/usecase"
+
+	usersHandler "github.com/drakenchef/Tinder/internal/pkg/users/delivery/http"
+	usersRepo "github.com/drakenchef/Tinder/internal/pkg/users/repo"
+	usersUsecase "github.com/drakenchef/Tinder/internal/pkg/users/usecase"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -42,6 +46,10 @@ func main() {
 	authUsecase := authUsecase.NewAuthUsecase(authRepo)
 	authHandler := authHandler.NewAuthHandler(authUsecase)
 
+	usersRepo := usersRepo.NewUsersRepo(db)
+	usersUsecase := usersUsecase.NewUsersUsecase(usersRepo)
+	usersHandler := usersHandler.NewUsersHandler(usersUsecase)
+
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 	auth := r.PathPrefix("/auth").Subrouter()
 	{
@@ -50,6 +58,11 @@ func main() {
 		auth.Handle("/signin", http.HandlerFunc(authHandler.SignIn)).
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
 		auth.Handle("/checkauth", http.HandlerFunc(authHandler.CheckAuth)).
+			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+	}
+	user := r.PathPrefix("/user").Subrouter()
+	{
+		user.Handle("/list", http.HandlerFunc(usersHandler.UsersList)).
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
 	}
 
