@@ -1,6 +1,6 @@
 FROM golang:1.22-alpine AS builder
 WORKDIR /app
-COPY  . .
+COPY  .. .
 RUN go build -o TheTinder cmd/main/main.go
 
 FROM alpine as run_stage

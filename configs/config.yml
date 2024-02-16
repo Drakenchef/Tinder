@@ -1,4 +1,4 @@
-port: "8888"
+port: "8000"
 db:
   username: "postgres"
   host: "0.0.0.0"

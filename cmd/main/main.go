@@ -47,7 +47,7 @@ func main() {
 	{
 		auth.Handle("/signup", http.HandlerFunc(authHandler.SignUp)).
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
-		auth.Handle("/signip", http.HandlerFunc(authHandler.SignIn)).
+		auth.Handle("/signin", http.HandlerFunc(authHandler.SignIn)).
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
 		auth.Handle("/checkauth", http.HandlerFunc(authHandler.CheckAuth)).
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
@@ -83,6 +83,7 @@ func InitConfig() error {
 }
 
 // init db
+
 type Config struct {
 	Host     string
 	Port     string
@@ -104,6 +105,8 @@ func NewPostgresDB(cfg Config) (*sql.DB, error) {
 	}
 	return db, nil
 }
+
+//init server
 
 type Server struct {
 	httpServer *http.Server
