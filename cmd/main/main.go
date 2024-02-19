@@ -66,6 +66,9 @@ func main() {
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
 	}
 
+	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Not Found", http.StatusNotFound)
+	})
 	http.Handle("/", r)
 
 	srv := new(Server)

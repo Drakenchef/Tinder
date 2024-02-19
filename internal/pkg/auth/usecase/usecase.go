@@ -1,11 +1,13 @@
 package auth
 
 import (
-	"crypto/md5"
-	"encoding/hex"
+	"context"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/drakenchef/Tinder/internal/models"
-	auth "github.com/drakenchef/Tinder/internal/pkg/auth/repo"
+	"github.com/drakenchef/Tinder/internal/pkg/auth"
+	"github.com/drakenchef/Tinder/internal/pkg/middleware"
+	"github.com/drakenchef/Tinder/internal/utils"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"time"
 )
@@ -17,24 +19,25 @@ const (
 )
 
 type AuthUsecase struct {
-	authRepo *auth.AuthRepo
+	authRepo auth.AuthRepo
 }
 
-func NewAuthUsecase(authRepo *auth.AuthRepo) *AuthUsecase {
+func NewAuthUsecase(authRepo auth.AuthRepo) *AuthUsecase {
 	return &AuthUsecase{authRepo: authRepo}
 }
 
 type tokenClaims struct {
 	jwt.StandardClaims
-	UID int `json:"uid"`
+	UID uuid.UUID `json:"uid"`
 }
 
-func (u *AuthUsecase) CreateUser(user models.User) error {
+func (u *AuthUsecase) CreateUser(ctx context.Context, user models.SignInInput) error {
+	salt := utils.GenerateRandomSalt()
 	if user.Login == "" || user.Password == "" {
 		return errors.New("Login and password are required")
 	}
-	user.Password = generatePasswordHash(user.Password)
-	err := u.authRepo.CreateUser(user)
+	user.Password = middleware.GeneratePasswordHash(user.Password + salt)
+	err := u.authRepo.CreateUser(ctx, user, salt)
 	if err != nil {
 		return errors.Wrap(err, "failed to create user in repository")
 	}
@@ -42,8 +45,15 @@ func (u *AuthUsecase) CreateUser(user models.User) error {
 	return nil
 }
 
-func (u *AuthUsecase) GenerateToken(login, password string) (string, error) {
-	user, err := u.authRepo.GetUser(login, generatePasswordHash(password))
+//salt -> bd
+//jwt -> cookie
+
+func (u *AuthUsecase) GenerateToken(ctx context.Context, login, password string) (string, error) {
+	salt, err := u.authRepo.GetSaltByLogin(ctx, login)
+	if err != nil {
+		return "", err
+	}
+	user, err := u.authRepo.GetUser(ctx, login, middleware.GeneratePasswordHash(password+salt))
 	if err != nil {
 		return "", err
 	}
@@ -55,29 +65,4 @@ func (u *AuthUsecase) GenerateToken(login, password string) (string, error) {
 		user.UID,
 	})
 	return token.SignedString([]byte(signinkey))
-}
-
-func (u *AuthUsecase) ParseToken(accessToken string) (int, error) {
-	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("invalid signing method")
-		}
-		return []byte(signinkey), nil
-	})
-	if err != nil {
-		return 0, err
-	}
-	claims, ok := token.Claims.(*tokenClaims)
-	if !ok {
-		return 0, errors.New("token claims are not of type *tokenClaims")
-	}
-	return claims.UID, nil
-}
-
-func generatePasswordHash(password string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(password))
-	hashedPassword := hex.EncodeToString(hasher.Sum(nil))
-
-	return hashedPassword
 }

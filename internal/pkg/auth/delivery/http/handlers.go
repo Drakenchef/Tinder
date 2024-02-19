@@ -2,29 +2,31 @@ package auth
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/drakenchef/Tinder/internal/models"
-	auth "github.com/drakenchef/Tinder/internal/pkg/auth/usecase"
+	"github.com/drakenchef/Tinder/internal/pkg/auth"
+	"github.com/drakenchef/Tinder/internal/pkg/middleware"
 	"github.com/pkg/errors"
 	"net/http"
 )
 
 type AuthHandler struct {
-	authUsecase *auth.AuthUsecase
+	authUsecase auth.AuthUsecase
 }
 
-func NewAuthHandler(authUsecase *auth.AuthUsecase) *AuthHandler {
+func NewAuthHandler(authUsecase auth.AuthUsecase) *AuthHandler {
 	return &AuthHandler{authUsecase: authUsecase}
 }
 
 func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
-	var user models.User
+	var user models.SignInInput
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		http.Error(w, errors.Wrap(err, "failed to decode request body").Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = h.authUsecase.CreateUser(user)
+	err = h.authUsecase.CreateUser(r.Context(), user)
 	if err != nil {
 		http.Error(w, errors.Wrap(err, "failed to sign up user").Error(), http.StatusInternalServerError)
 		return
@@ -33,22 +35,39 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
-	var user models.User
+	var user models.SignInInput
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		http.Error(w, errors.Wrap(err, "failed to decode request body").Error(), http.StatusBadRequest)
 		return
 	}
 
-	token, err := h.authUsecase.GenerateToken(user.Login, user.Password)
+	token, err := h.authUsecase.GenerateToken(r.Context(), user.Login, user.Password)
 	if err != nil {
 		http.Error(w, errors.Wrap(err, "failed to sign in user").Error(), http.StatusInternalServerError)
 		return
 	}
 
+	w.Header().Set("Authorization", "Bearer "+token)
+	cookie := http.Cookie{
+		Name:     "token",
+		Value:    token,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+	}
+	http.SetCookie(w, &cookie)
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(token))
 }
 
-func (ah *AuthHandler) CheckAuth(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) CheckAuth(w http.ResponseWriter, r *http.Request) {
+	userId, err := middleware.CheckAuth(r)
+	fmt.Println(userId)
+	if err != nil {
+		w.Write([]byte("User is not authorized"))
+	} else {
+		w.Write([]byte("User is authorized"))
+	}
 }
