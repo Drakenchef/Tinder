@@ -48,12 +48,12 @@ func (u *AuthUsecase) CreateUser(ctx context.Context, user models.SignInInput) e
 //salt -> bd
 //jwt -> cookie
 
-func (u *AuthUsecase) GenerateToken(ctx context.Context, login, password string) (string, error) {
-	salt, err := u.authRepo.GetSaltByLogin(ctx, login)
+func (u *AuthUsecase) GenerateToken(ctx context.Context, input models.SignInInput) (string, error) {
+	salt, err := u.authRepo.GetSaltByLogin(ctx, input.Login)
 	if err != nil {
 		return "", err
 	}
-	user, err := u.authRepo.GetUser(ctx, login, middleware.GeneratePasswordHash(password+salt))
+	user, err := u.authRepo.GetUser(ctx, input.Login, middleware.GeneratePasswordHash(input.Password+salt))
 	if err != nil {
 		return "", err
 	}

@@ -3,16 +3,23 @@ package auth
 import (
 	"context"
 	"github.com/drakenchef/Tinder/internal/models"
+	"github.com/google/uuid"
+	"net/http"
 )
 
 //go:generate mockgen -source=interfaces.go -destination=mocks/intefaces_mock.go -package=mock
 
 type AuthUsecase interface {
 	CreateUser(context.Context, models.SignInInput) error
-	GenerateToken(context.Context, string, string) (string, error)
+	GenerateToken(context.Context, models.SignInInput) (string, error)
 }
 type AuthRepo interface {
 	CreateUser(context.Context, models.SignInInput, string) error
 	GetUser(context.Context, string, string) (models.User, error)
 	GetSaltByLogin(context.Context, string) (string, error)
+}
+
+type Middleware interface {
+	CheckAuth(*http.Request) (uuid.UUID, error)
+	GeneratePasswordHash(string) string
 }

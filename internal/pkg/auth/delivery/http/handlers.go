@@ -42,7 +42,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := h.authUsecase.GenerateToken(r.Context(), user.Login, user.Password)
+	token, err := h.authUsecase.GenerateToken(r.Context(), user)
 	if err != nil {
 		http.Error(w, errors.Wrap(err, "failed to sign in user").Error(), http.StatusInternalServerError)
 		return

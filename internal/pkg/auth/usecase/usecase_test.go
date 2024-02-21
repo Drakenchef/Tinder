@@ -1,27 +1,51 @@
 package auth
 
 import (
-	auth "github.com/drakenchef/Tinder/internal/pkg/auth/repo"
-	"reflect"
+	"context"
+	"github.com/drakenchef/Tinder/internal/models"
+	mock "github.com/drakenchef/Tinder/internal/pkg/auth/mocks"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func TestNewAuthUsecase(t *testing.T) {
-	type args struct {
-		authRepo *auth.AuthRepo
+func TestCreateUser(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	repo := mock.NewMockAuthRepo(ctrl)
+	usecase := NewAuthUsecase(repo)
+	ctx := context.Background()
+	emptyLoginUser := models.SignInInput{
+		Login:    "",
+		Password: "123",
 	}
-	tests := []struct {
-		name string
-		args args
-		want *AuthUsecase
-	}{
-		// TODO: Add test cases.
+	err := usecase.CreateUser(ctx, emptyLoginUser)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "Login and password are required")
+	emptyPasswordUser := models.SignInInput{
+		Login:    "Moto",
+		Password: "",
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewAuthUsecase(tt.args.authRepo); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewAuthUsecase() = %v, want %v", got, tt.want)
-			}
-		})
+	err = usecase.CreateUser(ctx, emptyPasswordUser)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "Login and password are required")
+}
+
+func TestGenerateToken(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	repo := mock.NewMockAuthRepo(ctrl)
+	usecase := NewAuthUsecase(repo)
+	ctx := context.Background()
+	input := models.SignInInput{
+		Login:    "Moto",
+		Password: "123",
 	}
+	salt := "salt"
+	repo.EXPECT().GetSaltByLogin(ctx, input.Login).Return(salt, nil)
+	repo.EXPECT().GetUser(ctx, input.Login, gomock.Any()).Return(models.User{}, nil)
+	tokenStr, err := usecase.GenerateToken(ctx, input)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, tokenStr)
+
 }
