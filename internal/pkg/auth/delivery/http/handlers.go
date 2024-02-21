@@ -31,7 +31,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, errors.Wrap(err, "failed to sign up user").Error(), http.StatusInternalServerError)
 		return
 	}
-
+	//commit
 	w.WriteHeader(http.StatusCreated)
 }
 func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
