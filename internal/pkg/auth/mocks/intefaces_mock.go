@@ -36,7 +36,7 @@ func (m *MockAuthUsecase) EXPECT() *MockAuthUsecaseMockRecorder {
 }
 
 // CreateUser mocks base method.
-func (m *MockAuthUsecase) CreateUser(arg0 context.Context, arg1 models.User) error {
+func (m *MockAuthUsecase) CreateUser(arg0 context.Context, arg1 models.SignInInput) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateUser", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -50,31 +50,83 @@ func (mr *MockAuthUsecaseMockRecorder) CreateUser(arg0, arg1 interface{}) *gomoc
 }
 
 // GenerateToken mocks base method.
-func (m *MockAuthUsecase) GenerateToken(arg0, arg1 string) (string, error) {
+func (m *MockAuthUsecase) GenerateToken(arg0 context.Context, arg1, arg2 string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GenerateToken", arg0, arg1)
+	ret := m.ctrl.Call(m, "GenerateToken", arg0, arg1, arg2)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GenerateToken indicates an expected call of GenerateToken.
-func (mr *MockAuthUsecaseMockRecorder) GenerateToken(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockAuthUsecaseMockRecorder) GenerateToken(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateToken", reflect.TypeOf((*MockAuthUsecase)(nil).GenerateToken), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenerateToken", reflect.TypeOf((*MockAuthUsecase)(nil).GenerateToken), arg0, arg1, arg2)
 }
 
-// ParseToken mocks base method.
-func (m *MockAuthUsecase) ParseToken(arg0 string) (int, error) {
+// MockAuthRepo is a mock of AuthRepo interface.
+type MockAuthRepo struct {
+	ctrl     *gomock.Controller
+	recorder *MockAuthRepoMockRecorder
+}
+
+// MockAuthRepoMockRecorder is the mock recorder for MockAuthRepo.
+type MockAuthRepoMockRecorder struct {
+	mock *MockAuthRepo
+}
+
+// NewMockAuthRepo creates a new mock instance.
+func NewMockAuthRepo(ctrl *gomock.Controller) *MockAuthRepo {
+	mock := &MockAuthRepo{ctrl: ctrl}
+	mock.recorder = &MockAuthRepoMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockAuthRepo) EXPECT() *MockAuthRepoMockRecorder {
+	return m.recorder
+}
+
+// CreateUser mocks base method.
+func (m *MockAuthRepo) CreateUser(arg0 context.Context, arg1 models.SignInInput, arg2 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ParseToken", arg0)
-	ret0, _ := ret[0].(int)
+	ret := m.ctrl.Call(m, "CreateUser", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateUser indicates an expected call of CreateUser.
+func (mr *MockAuthRepoMockRecorder) CreateUser(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockAuthRepo)(nil).CreateUser), arg0, arg1, arg2)
+}
+
+// GetSaltByLogin mocks base method.
+func (m *MockAuthRepo) GetSaltByLogin(arg0 context.Context, arg1 string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSaltByLogin", arg0, arg1)
+	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ParseToken indicates an expected call of ParseToken.
-func (mr *MockAuthUsecaseMockRecorder) ParseToken(arg0 interface{}) *gomock.Call {
+// GetSaltByLogin indicates an expected call of GetSaltByLogin.
+func (mr *MockAuthRepoMockRecorder) GetSaltByLogin(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParseToken", reflect.TypeOf((*MockAuthUsecase)(nil).ParseToken), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSaltByLogin", reflect.TypeOf((*MockAuthRepo)(nil).GetSaltByLogin), arg0, arg1)
+}
+
+// GetUser mocks base method.
+func (m *MockAuthRepo) GetUser(arg0 context.Context, arg1, arg2 string) (models.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUser", arg0, arg1, arg2)
+	ret0, _ := ret[0].(models.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUser indicates an expected call of GetUser.
+func (mr *MockAuthRepoMockRecorder) GetUser(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockAuthRepo)(nil).GetUser), arg0, arg1, arg2)
 }

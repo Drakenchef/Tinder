@@ -11,11 +11,11 @@ import (
 	"testing"
 )
 
-func TestFoo(t *testing.T) {
+func TestSignUp(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	usecase := mock.NewMockAuthUsecase(ctrl)
-	usecase.EXPECT().CreateUser(gomock.Any(), models.User{Login: "Moto", Password: "123"}).Return(nil)
+	usecase.EXPECT().CreateUser(gomock.Any(), models.SignInInput{Login: "Moto", Password: "123"}).Return(nil)
 	handler := NewAuthHandler(usecase)
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/signup", strings.NewReader("{\n    \"login\":\"Moto\",\n    \"password\":\"123\"\n}"))
