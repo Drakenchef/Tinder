@@ -29,6 +29,13 @@ func TestCreateUser(t *testing.T) {
 	err = usecase.CreateUser(ctx, emptyPasswordUser)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "Login and password are required")
+	goodPassNLogin := models.SignInInput{
+		Login:    "Moto",
+		Password: "123",
+	}
+	repo.EXPECT().CreateUser(gomock.Any(), goodPassNLogin, gomock.Any()).Return(nil)
+	err = usecase.CreateUser(ctx, goodPassNLogin)
+	assert.NoError(t, err)
 }
 
 func TestGenerateToken(t *testing.T) {

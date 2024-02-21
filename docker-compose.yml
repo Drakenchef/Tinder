@@ -8,7 +8,7 @@ services:
       db:
         condition: service_started
     ports:
-      - "8000:8000"
+      - "8888:8888"
     build:
       context: .
       dockerfile: Dockerfile
@@ -16,6 +16,8 @@ services:
       - ./configs:/out/configs
       - ./.env:/out/.env
     restart: always
+    networks:
+      - my-network
 
   db:
     env_file:
@@ -31,3 +33,10 @@ services:
 #    volumes:
 #      - ./build/sql/1_create.sql:/docker-entrypoint-initdb.d/initdb.sql
     restart: always
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    name: my-network
+    driver: bridge

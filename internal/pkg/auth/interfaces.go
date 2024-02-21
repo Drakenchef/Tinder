@@ -3,8 +3,6 @@ package auth
 import (
 	"context"
 	"github.com/drakenchef/Tinder/internal/models"
-	"github.com/google/uuid"
-	"net/http"
 )
 
 //go:generate mockgen -source=interfaces.go -destination=mocks/intefaces_mock.go -package=mock
@@ -19,7 +17,7 @@ type AuthRepo interface {
 	GetSaltByLogin(context.Context, string) (string, error)
 }
 
-type Middleware interface {
-	CheckAuth(*http.Request) (uuid.UUID, error)
+type Auther interface {
+	//CheckAuth(*http.Request) (uuid.UUID, error)
 	GeneratePasswordHash(string) string
 }

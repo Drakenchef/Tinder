@@ -5,7 +5,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/drakenchef/Tinder/internal/models"
 	"github.com/drakenchef/Tinder/internal/pkg/auth"
-	"github.com/drakenchef/Tinder/internal/pkg/middleware"
 	"github.com/drakenchef/Tinder/internal/utils"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -20,10 +19,11 @@ const (
 
 type AuthUsecase struct {
 	authRepo auth.AuthRepo
+	auther   auth.Auther
 }
 
 func NewAuthUsecase(authRepo auth.AuthRepo) *AuthUsecase {
-	return &AuthUsecase{authRepo: authRepo}
+	return &AuthUsecase{authRepo: authRepo, auther: &Auther{}}
 }
 
 type tokenClaims struct {
@@ -36,7 +36,7 @@ func (u *AuthUsecase) CreateUser(ctx context.Context, user models.SignInInput) e
 	if user.Login == "" || user.Password == "" {
 		return errors.New("Login and password are required")
 	}
-	user.Password = middleware.GeneratePasswordHash(user.Password + salt)
+	user.Password = u.auther.GeneratePasswordHash(user.Password + salt)
 	err := u.authRepo.CreateUser(ctx, user, salt)
 	if err != nil {
 		return errors.Wrap(err, "failed to create user in repository")
@@ -53,7 +53,7 @@ func (u *AuthUsecase) GenerateToken(ctx context.Context, input models.SignInInpu
 	if err != nil {
 		return "", err
 	}
-	user, err := u.authRepo.GetUser(ctx, input.Login, middleware.GeneratePasswordHash(input.Password+salt))
+	user, err := u.authRepo.GetUser(ctx, input.Login, u.auther.GeneratePasswordHash(input.Password+salt))
 	if err != nil {
 		return "", err
 	}

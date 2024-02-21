@@ -1,8 +1,6 @@
 package middleware
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -62,12 +60,4 @@ func ParseToken(accessToken string) (uuid.UUID, error) {
 		return uuid.Nil, errors.New("token claims are not of type *tokenClaims")
 	}
 	return claims.UID, nil
-}
-
-func GeneratePasswordHash(password string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(password))
-	hashedPassword := hex.EncodeToString(hasher.Sum(nil))
-
-	return hashedPassword
 }

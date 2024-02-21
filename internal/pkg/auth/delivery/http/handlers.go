@@ -66,8 +66,12 @@ func (h *AuthHandler) CheckAuth(w http.ResponseWriter, r *http.Request) {
 	userId, err := middleware.CheckAuth(r)
 	fmt.Println(userId)
 	if err != nil {
+		w.WriteHeader(http.StatusForbidden)
 		w.Write([]byte("User is not authorized"))
+
 	} else {
+		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("User is authorized"))
+
 	}
 }

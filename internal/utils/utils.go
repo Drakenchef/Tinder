@@ -5,8 +5,9 @@ import (
 	"encoding/hex"
 )
 
+const saltLength = 16
+
 func GenerateRandomSalt() string {
-	saltLength := 16
 	salt := make([]byte, saltLength)
 	_, err := rand.Read(salt)
 	if err != nil {

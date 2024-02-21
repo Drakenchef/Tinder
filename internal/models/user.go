@@ -9,7 +9,7 @@ type User struct {
 	Password    string    `json:"password" binding:"required"`
 	Image       string    `json:"image" binding:"required"`
 	Description string    `json:"description" binding:"required"`
-	Salt        string    `json:"salt"`
+	Salt        string    `json:"-"`
 }
 
 type SignInInput struct {

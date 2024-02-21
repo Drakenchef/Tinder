@@ -1,10 +1,12 @@
 package auth
 
 import (
+	"fmt"
 	"github.com/drakenchef/Tinder/internal/models"
 	mock "github.com/drakenchef/Tinder/internal/pkg/auth/mocks"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"html"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -62,4 +64,10 @@ func TestSignInFail(t *testing.T) {
 		handler.SignIn(w, req)
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
+}
+
+func TestFoo(t *testing.T) {
+	input := "<>&\"'"
+	output := html.EscapeString(input)
+	fmt.Println(output)
 }
