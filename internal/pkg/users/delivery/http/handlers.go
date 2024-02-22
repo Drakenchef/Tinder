@@ -2,8 +2,8 @@ package users
 
 import (
 	"encoding/json"
-	"github.com/drakenchef/Tinder/internal/pkg/middleware"
 	"github.com/drakenchef/Tinder/internal/pkg/users"
+	"github.com/drakenchef/Tinder/internal/utils"
 	"github.com/pkg/errors"
 	"net/http"
 )
@@ -17,7 +17,7 @@ func NewUsersHandler(usersUsecase users.UsersUsecase) *UsersHandler {
 }
 
 func (h *UsersHandler) UsersList(w http.ResponseWriter, r *http.Request) {
-	_, err := middleware.CheckAuth(r)
+	_, err := utils.CheckAuth(r)
 	if err == nil {
 		users, err := h.usersUsecase.UsersList(r.Context())
 		if err != nil {

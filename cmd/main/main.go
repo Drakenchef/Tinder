@@ -7,10 +7,10 @@ import (
 	authHandler "github.com/drakenchef/Tinder/internal/pkg/auth/delivery/http"
 	authRepo "github.com/drakenchef/Tinder/internal/pkg/auth/repo"
 	authUsecase "github.com/drakenchef/Tinder/internal/pkg/auth/usecase"
-	"github.com/drakenchef/Tinder/internal/pkg/middleware"
 	usersHandler "github.com/drakenchef/Tinder/internal/pkg/users/delivery/http"
 	usersRepo "github.com/drakenchef/Tinder/internal/pkg/users/repo"
 	usersUsecase "github.com/drakenchef/Tinder/internal/pkg/users/usecase"
+	"github.com/drakenchef/Tinder/internal/utils"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -51,10 +51,9 @@ func main() {
 	usersHandler := usersHandler.NewUsersHandler(usersUsecase)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
-	r.Use(Check)
+	//r.Use(Check)
 	auth := r.PathPrefix("/auth").Subrouter()
 	{
-		//auth.Handle("/check", http.Handle(check(authHandler.CheckAuth)))
 		auth.Handle("/signup", http.HandlerFunc(authHandler.SignUp)).
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
 		auth.Handle("/signin", http.HandlerFunc(authHandler.SignIn)).
@@ -103,7 +102,7 @@ func main() {
 
 func Check(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		_, err := middleware.CheckAuth(req)
+		_, err := utils.CheckAuth(req)
 		if err != nil {
 			w.WriteHeader(http.StatusForbidden)
 			return

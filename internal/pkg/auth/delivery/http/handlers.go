@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/drakenchef/Tinder/internal/models"
 	"github.com/drakenchef/Tinder/internal/pkg/auth"
-	"github.com/drakenchef/Tinder/internal/pkg/middleware"
+	"github.com/drakenchef/Tinder/internal/utils"
 	"github.com/pkg/errors"
 	"net/http"
 )
@@ -63,7 +63,7 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) CheckAuth(w http.ResponseWriter, r *http.Request) {
-	userId, err := middleware.CheckAuth(r)
+	userId, err := utils.CheckAuth(r)
 	fmt.Println(userId)
 	if err != nil {
 		w.WriteHeader(http.StatusForbidden)

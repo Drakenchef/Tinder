@@ -6,12 +6,10 @@ package mock
 
 import (
 	context "context"
-	http "net/http"
 	reflect "reflect"
 
 	models "github.com/drakenchef/Tinder/internal/models"
 	gomock "github.com/golang/mock/gomock"
-	uuid "github.com/google/uuid"
 )
 
 // MockAuthUsecase is a mock of AuthUsecase interface.
@@ -35,18 +33,6 @@ func NewMockAuthUsecase(ctrl *gomock.Controller) *MockAuthUsecase {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAuthUsecase) EXPECT() *MockAuthUsecaseMockRecorder {
 	return m.recorder
-}
-
-// CheckAuth mocks base method.
-func (m *MockAuthUsecase) CheckAuth(arg0 http.ResponseWriter, arg1 *http.Request) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "CheckAuth", arg0, arg1)
-}
-
-// CheckAuth indicates an expected call of CheckAuth.
-func (mr *MockAuthUsecaseMockRecorder) CheckAuth(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckAuth", reflect.TypeOf((*MockAuthUsecase)(nil).CheckAuth), arg0, arg1)
 }
 
 // CreateUser mocks base method.
@@ -145,46 +131,31 @@ func (mr *MockAuthRepoMockRecorder) GetUser(arg0, arg1, arg2 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockAuthRepo)(nil).GetUser), arg0, arg1, arg2)
 }
 
-// MockMiddleware is a mock of Middleware interface.
-type MockMiddleware struct {
+// MockAuther is a mock of Auther interface.
+type MockAuther struct {
 	ctrl     *gomock.Controller
-	recorder *MockMiddlewareMockRecorder
+	recorder *MockAutherMockRecorder
 }
 
-// MockMiddlewareMockRecorder is the mock recorder for MockMiddleware.
-type MockMiddlewareMockRecorder struct {
-	mock *MockMiddleware
+// MockAutherMockRecorder is the mock recorder for MockAuther.
+type MockAutherMockRecorder struct {
+	mock *MockAuther
 }
 
-// NewMockMiddleware creates a new mock instance.
-func NewMockMiddleware(ctrl *gomock.Controller) *MockMiddleware {
-	mock := &MockMiddleware{ctrl: ctrl}
-	mock.recorder = &MockMiddlewareMockRecorder{mock}
+// NewMockAuther creates a new mock instance.
+func NewMockAuther(ctrl *gomock.Controller) *MockAuther {
+	mock := &MockAuther{ctrl: ctrl}
+	mock.recorder = &MockAutherMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockMiddleware) EXPECT() *MockMiddlewareMockRecorder {
+func (m *MockAuther) EXPECT() *MockAutherMockRecorder {
 	return m.recorder
 }
 
-// CheckAuth mocks base method.
-func (m *MockMiddleware) CheckAuth(arg0 *http.Request) (uuid.UUID, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckAuth", arg0)
-	ret0, _ := ret[0].(uuid.UUID)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CheckAuth indicates an expected call of CheckAuth.
-func (mr *MockMiddlewareMockRecorder) CheckAuth(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckAuth", reflect.TypeOf((*MockMiddleware)(nil).CheckAuth), arg0)
-}
-
 // GeneratePasswordHash mocks base method.
-func (m *MockMiddleware) GeneratePasswordHash(arg0 string) string {
+func (m *MockAuther) GeneratePasswordHash(arg0 string) string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GeneratePasswordHash", arg0)
 	ret0, _ := ret[0].(string)
@@ -192,22 +163,7 @@ func (m *MockMiddleware) GeneratePasswordHash(arg0 string) string {
 }
 
 // GeneratePasswordHash indicates an expected call of GeneratePasswordHash.
-func (mr *MockMiddlewareMockRecorder) GeneratePasswordHash(arg0 interface{}) *gomock.Call {
+func (mr *MockAutherMockRecorder) GeneratePasswordHash(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GeneratePasswordHash", reflect.TypeOf((*MockMiddleware)(nil).GeneratePasswordHash), arg0)
-}
-
-// ParseToken mocks base method.
-func (m *MockMiddleware) ParseToken(arg0 string) (uuid.UUID, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ParseToken", arg0)
-	ret0, _ := ret[0].(uuid.UUID)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ParseToken indicates an expected call of ParseToken.
-func (mr *MockMiddlewareMockRecorder) ParseToken(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParseToken", reflect.TypeOf((*MockMiddleware)(nil).ParseToken), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GeneratePasswordHash", reflect.TypeOf((*MockAuther)(nil).GeneratePasswordHash), arg0)
 }

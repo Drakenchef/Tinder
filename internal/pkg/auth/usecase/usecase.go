@@ -6,13 +6,14 @@ import (
 	"github.com/drakenchef/Tinder/internal/models"
 	"github.com/drakenchef/Tinder/internal/pkg/auth"
 	"github.com/drakenchef/Tinder/internal/utils"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/pkg/errors"
 	"time"
 )
 
 const (
-	salt      = "justasaltsimbolsfordecode"
 	signinkey = "qweeqwrqw2131e2r3t22trtrfg42"
 	tokenTTL  = 12 * time.Hour
 )
@@ -32,10 +33,14 @@ type tokenClaims struct {
 }
 
 func (u *AuthUsecase) CreateUser(ctx context.Context, user models.SignInInput) error {
-	salt := utils.GenerateRandomSalt()
-	if user.Login == "" || user.Password == "" {
-		return errors.New("Login and password are required")
+	validate := validator.New()
+	if err := validate.Struct(user); err != nil {
+		return errors.Wrap(err, "validation failed")
 	}
+	p := bluemonday.UGCPolicy()
+	user.Login = p.Sanitize(user.Login)
+	user.Password = p.Sanitize(user.Password)
+	salt := utils.GenerateRandomSalt()
 	user.Password = u.auther.GeneratePasswordHash(user.Password + salt)
 	err := u.authRepo.CreateUser(ctx, user, salt)
 	if err != nil {
@@ -45,10 +50,16 @@ func (u *AuthUsecase) CreateUser(ctx context.Context, user models.SignInInput) e
 	return nil
 }
 
-//salt -> bd
-//jwt -> cookie
-
 func (u *AuthUsecase) GenerateToken(ctx context.Context, input models.SignInInput) (string, error) {
+	validate := validator.New()
+	if err := validate.Struct(input); err != nil {
+		return "", errors.Wrap(err, "validation failed")
+	}
+
+	p := bluemonday.UGCPolicy()
+	input.Login = p.Sanitize(input.Login)
+	input.Password = p.Sanitize(input.Password)
+
 	salt, err := u.authRepo.GetSaltByLogin(ctx, input.Login)
 	if err != nil {
 		return "", err
