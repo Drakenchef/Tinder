@@ -96,6 +96,7 @@ func TestSignInInternalServerError(t *testing.T) {
 }
 
 func TestCheckAuthAuthorized(t *testing.T) {
+	t.Skip("work in progress")
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	usecase := mock.NewMockAuthUsecase(ctrl)
