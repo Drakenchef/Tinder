@@ -1,0 +1,63 @@
+name: TheTinder build
+
+on:
+  push:
+    branches:
+      - main  
+      # - dev # текущая ветка разработки
+jobs:
+  #ШАГ 1: прогон линтеров
+  linters-act: #имя шага
+    name: linters
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '1.22'
+      - uses: actions/checkout@v3 
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+  #ШАГ 2: прогон тестов
+  tests-act:
+    name: tests 
+    # needs: linters-act #если линтеры упали, дальше тесты не запускаются
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.22'
+      - name: Build
+        run: go build -v ./...
+      - name: Test
+        run: go test -v ./...
+
+  #ШАГ 3: деплой 
+  deploy:
+    name: Deploy TheTinder
+    # needs: tests-act #только после тестов и линитера
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull code #обновляем код
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }} #все данные лежат в секретах в репозитории
+          username: ${{secrets.USER}}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: cd /root/gitprojects/Tinder && git pull 
+      - name: Build containers #собираем код
+        uses: appleboy/ssh-action@master
+        with:
+          timeout: 10m
+          host: ${{ secrets.HOST }}
+          username: ${{secrets.USER}}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: cd /root/gitprojects/Tinder && sudo docker compose build
+      - name: Restart service #рестартим код
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{secrets.USER}}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: cd /root/gitprojects/Tinder&& sudo docker compose down && sudo docker compose up -d #-d освобождает консоль
