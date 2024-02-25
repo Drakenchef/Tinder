@@ -95,22 +95,22 @@ func TestSignInInternalServerError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
-func TestCheckAuthAuthorized(t *testing.T) {
-	t.Skip("work in progress")
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	usecase := mock.NewMockAuthUsecase(ctrl)
-	handler := NewAuthHandler(usecase)
-
-	req := httptest.NewRequest(http.MethodGet, "/checkauth", nil)
-	req.Header.Set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDg2NjA3NjIsImlhdCI6MTcwODYxNzU2MiwidWlkIjoiN2FhMTMxNDEtODAwMy00Zjc5LWI4ZTUtYThmMGM5MDIwYmJjIn0.Z5PjZjRxDo9IECMxPsLPiqpeQ5kT0KTz9lMGGqPTyfE")
-	w := httptest.NewRecorder()
-
-	handler.CheckAuth(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-	assert.Equal(t, "User is authorized", w.Body.String())
-}
+//func TestCheckAuthAuthorized(t *testing.T) {
+//	t.Skip("work in progress")
+//	ctrl := gomock.NewController(t)
+//	defer ctrl.Finish()
+//	usecase := mock.NewMockAuthUsecase(ctrl)
+//	handler := NewAuthHandler(usecase)
+//
+//	req := httptest.NewRequest(http.MethodGet, "/checkauth", nil)
+//	req.Header.Set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDg2NjA3NjIsImlhdCI6MTcwODYxNzU2MiwidWlkIjoiN2FhMTMxNDEtODAwMy00Zjc5LWI4ZTUtYThmMGM5MDIwYmJjIn0.Z5PjZjRxDo9IECMxPsLPiqpeQ5kT0KTz9lMGGqPTyfE")
+//	w := httptest.NewRecorder()
+//
+//	handler.CheckAuth(w, req)
+//
+//	assert.Equal(t, http.StatusOK, w.Code)
+//	assert.Equal(t, "User is authorized", w.Body.String())
+//}
 
 func TestCheckAuthUnauthorized(t *testing.T) {
 	ctrl := gomock.NewController(t)
