@@ -71,13 +71,11 @@ func (h *AuthHandler) CheckAuth(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
-
 	} else {
 		w.WriteHeader(http.StatusOK)
 		_, err := w.Write([]byte("User is authorized"))
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
-
 	}
 }
