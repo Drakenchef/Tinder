@@ -28,7 +28,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	err = h.authUsecase.CreateUser(r.Context(), user)
 	if err != nil {
-		http.Error(w, errors.Wrap(err, "failed to sign up user").Error(), http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	//commit
@@ -38,13 +38,13 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	var user models.SignInInput
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
-		http.Error(w, errors.Wrap(err, "failed to decode request body").Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	token, err := h.authUsecase.GenerateToken(r.Context(), user)
 	if err != nil {
-		http.Error(w, errors.Wrap(err, "failed to sign in user").Error(), http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -71,5 +71,3 @@ func (h *AuthHandler) CheckAuth(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}
 }
-
-//commit
