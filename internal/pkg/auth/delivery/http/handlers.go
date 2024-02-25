@@ -66,14 +66,16 @@ func (h *AuthHandler) CheckAuth(w http.ResponseWriter, r *http.Request) {
 	userId, err := utils.CheckAuth(r)
 	fmt.Println(userId)
 	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
 		if _, err := w.Write([]byte("User is not authorized")); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			w.WriteHeader(http.StatusForbidden)
 		}
 	} else {
-		w.WriteHeader(http.StatusOK)
 		if _, err := w.Write([]byte("User is authorized")); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			w.WriteHeader(http.StatusOK)
 		}
 	}
 }
