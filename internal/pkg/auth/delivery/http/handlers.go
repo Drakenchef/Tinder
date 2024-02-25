@@ -79,3 +79,5 @@ func (h *AuthHandler) CheckAuth(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+
+//commit
