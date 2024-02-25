@@ -6,7 +6,6 @@ import (
 	"github.com/drakenchef/Tinder/internal/models"
 	"github.com/drakenchef/Tinder/internal/pkg/auth"
 	"github.com/drakenchef/Tinder/internal/utils"
-	"github.com/pkg/errors"
 	"net/http"
 )
 
@@ -22,7 +21,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var user models.SignInInput
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
-		http.Error(w, errors.Wrap(err, "failed to decode request body").Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
