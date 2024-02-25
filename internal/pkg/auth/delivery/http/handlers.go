@@ -19,20 +19,17 @@ func NewAuthHandler(authUsecase auth.AuthUsecase) *AuthHandler {
 
 func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	var user models.SignInInput
-	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	err = h.authUsecase.CreateUser(r.Context(), user)
-	if err != nil {
+	if err := h.authUsecase.CreateUser(r.Context(), user); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	//commit
 	w.WriteHeader(http.StatusCreated)
 }
+
 func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	var user models.SignInInput
 	err := json.NewDecoder(r.Body).Decode(&user)

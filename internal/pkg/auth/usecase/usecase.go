@@ -35,7 +35,7 @@ type tokenClaims struct {
 func (u *AuthUsecase) CreateUser(ctx context.Context, user models.SignInInput) error {
 	validate := validator.New()
 	if err := validate.Struct(user); err != nil {
-		return errors.Wrap(err, "validation failed")
+		return errors.New("validation failed")
 	}
 	p := bluemonday.UGCPolicy()
 	user.Login = p.Sanitize(user.Login)
@@ -44,7 +44,7 @@ func (u *AuthUsecase) CreateUser(ctx context.Context, user models.SignInInput) e
 	user.Password = u.auther.GeneratePasswordHash(user.Password + salt)
 	err := u.authRepo.CreateUser(ctx, user, salt)
 	if err != nil {
-		return errors.Wrap(err, "failed to create user in repository")
+		return errors.New("failed to create user in repository")
 	}
 
 	return nil
@@ -53,7 +53,7 @@ func (u *AuthUsecase) CreateUser(ctx context.Context, user models.SignInInput) e
 func (u *AuthUsecase) GenerateToken(ctx context.Context, input models.SignInInput) (string, error) {
 	validate := validator.New()
 	if err := validate.Struct(input); err != nil {
-		return "", errors.Wrap(err, "validation failed")
+		return "", errors.New("validation failed")
 	}
 
 	p := bluemonday.UGCPolicy()
