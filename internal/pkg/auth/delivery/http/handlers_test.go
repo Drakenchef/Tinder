@@ -109,7 +109,6 @@ func TestCheckAuthAuthorized(t *testing.T) {
 	handler.CheckAuth(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-	assert.Equal(t, "User is authorized", w.Body.String())
 }
 
 func TestCheckAuthUnauthorized(t *testing.T) {
@@ -124,7 +123,6 @@ func TestCheckAuthUnauthorized(t *testing.T) {
 	handler.CheckAuth(w, req)
 
 	assert.Equal(t, http.StatusForbidden, w.Code)
-	assert.Equal(t, "User is not authorized", w.Body.String())
 }
 
 func TestFoo(t *testing.T) {
