@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/drakenchef/Tinder/internal/models"
 	"github.com/drakenchef/Tinder/internal/pkg/auth"
@@ -9,7 +10,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/microcosm-cc/bluemonday"
-	"github.com/pkg/errors"
+
 	"time"
 )
 
@@ -44,7 +45,7 @@ func (u *AuthUsecase) CreateUser(ctx context.Context, user models.SignInInput) e
 	user.Password = u.auther.GeneratePasswordHash(user.Password + salt)
 	err := u.authRepo.CreateUser(ctx, user, salt)
 	if err != nil {
-		return errors.New("failed to create user in repository")
+		return err
 	}
 
 	return nil

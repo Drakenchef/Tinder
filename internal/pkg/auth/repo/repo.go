@@ -3,9 +3,9 @@ package auth
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"github.com/drakenchef/Tinder/internal/models"
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
 type AuthRepo struct {
