@@ -30,7 +30,7 @@ func (h *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-// commits
+// commit
 func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	var user models.SignInInput
 	err := json.NewDecoder(r.Body).Decode(&user)
