@@ -32,32 +32,46 @@ jobs:
         run: go build -v ./...
       - name: Test
         run: go test -v ./...
-
-  #ШАГ 3: деплой 
   deploy:
     name: Deploy TheTinder
     # needs: tests-act #только после тестов и линитера
     runs-on: ubuntu-latest
     steps:
-      - name: Pull code #обновляем код
-        uses: appleboy/ssh-action@master
+      - uses: actions/checkout@v3
+      - name: Set up SSH keys for deployment
+        uses: webfactory/ssh-agent@v0.5.3
         with:
-          host: ${{ secrets.HOST }} #все данные лежат в секретах в репозитории
-          username: ${{secrets.USER}}
-          key: ${{ secrets.PRIVATE_KEY }}
-          script: cd /root/gitprojects/Tinder && git pull 
-      - name: Build containers #собираем код
-        uses: appleboy/ssh-action@master
-        with:
-          timeout: 10m
-          host: ${{ secrets.HOST }}
-          username: ${{secrets.USER}}
-          key: ${{ secrets.PRIVATE_KEY }}
-          script: cd /root/gitprojects/Tinder && sudo docker compose build
-      - name: Restart service #рестартим код
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{secrets.USER}}
-          key: ${{ secrets.PRIVATE_KEY }}
-          script: cd /root/gitprojects/Tinder&& sudo docker compose down && sudo docker compose up -d #-d освобождает консоль
+          ssh-private-key: ${{ secrets.PRIVATE_KEY }}
+      - name: Deploy code
+        run: |
+          ssh root@${{secrets.HOST}} "cd /giprojects/Tinder && git pull origin main && ./deploy.sh"
+
+  # #ШАГ 3: деплой 
+  # deploy:
+  #   name: Deploy TheTinder
+  #   # needs: tests-act #только после тестов и линитера
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Pull code #обновляем код
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         host: ${{ secrets.HOST }} #все данные лежат в секретах в репозитории
+  #         username: ${{secrets.USER}}
+  #         key: ${{ secrets.PRIVATE_KEY }}
+  #         script: cd /root/gitprojects/Tinder && git pull 
+  #     - name: Build containers #собираем код
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         timeout: 10m
+  #         host: ${{ secrets.HOST }}
+  #         username: ${{secrets.USER}}
+  #         key: ${{ secrets.PRIVATE_KEY }}
+  #         script: cd /root/gitprojects/Tinder && sudo docker compose build
+  #     - name: Restart service #рестартим код
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         host: ${{ secrets.HOST }}
+  #         username: ${{secrets.USER}}
+  #         key: ${{ secrets.PRIVATE_KEY }}
+  #         script: cd /root/gitprojects/Tinder&& sudo docker compose down && sudo docker compose up -d #-d освобождает консоль
+  
