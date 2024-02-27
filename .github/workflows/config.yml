@@ -54,6 +54,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{secrets.USER}}
           # key: ${{ secrets.PRIVATE_KEY }}
+          # 
           password: ${{secrets.PASSWORD}}
           script: cd /root/gitprojects/Tinder && sudo docker compose build
       - name: Restart service #рестартим код
