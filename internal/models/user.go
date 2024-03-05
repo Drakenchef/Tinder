@@ -15,3 +15,5 @@ type SignInInput struct {
 	Login    string `json:"login" binding:"required" validate:"required,min=6,alphanum"`
 	Password string `json:"password" binding:"required" validate:"required,min=6,alphanumunicode"`
 }
+
+//
