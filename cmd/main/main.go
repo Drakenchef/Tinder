@@ -62,8 +62,15 @@ func main() {
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
 	}
 	user := r.PathPrefix("/user").Subrouter()
+	user.Use(Check)
 	{
 		user.Handle("/list", http.HandlerFunc(usersHandler.UsersList)).
+			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+		user.Handle("/profile", http.HandlerFunc(usersHandler.GetUser)).
+			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+		user.Handle("/update", http.HandlerFunc(usersHandler.UpdateUser)).
+			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+		user.Handle("/image", http.HandlerFunc(usersHandler.UpdateUserImage)).
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
 	}
 

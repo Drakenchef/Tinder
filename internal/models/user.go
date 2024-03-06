@@ -10,6 +10,11 @@ type User struct {
 	Description string    `json:"description" binding:"required"`
 	Salt        string    `json:"-"`
 }
+type Profile struct {
+	Login       string `json:"login" binding:"required" validate:"required,min=6,alphanum"`
+	Image       string `json:"image" binding:"required"`
+	Description string `json:"description" binding:"required"`
+}
 
 type SignInInput struct {
 	Login    string `json:"login" binding:"required" validate:"required,min=6,alphanum"`
