@@ -1,8 +1,9 @@
 linters-settings:
   errcheck:
     check-type-assertions: false
-    ignore:
-      - "logger.Sync"
+    ignore: |
+      github.com/go-kit/kit/log.Logger.Log
+      github.com/sirupsen/logrus.*
   govet:
     check-shadowing: true
   bodyclose:
