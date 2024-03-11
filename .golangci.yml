@@ -1,3 +1,17 @@
 issues:
   exclude:
     - w.Write
+linters-settings:
+  errcheck:
+    check-named-results: false
+  unused:
+    check-exported: true
+  gosimple:
+    enabled: true
+  ineffassign:
+    enabled: true
+  staticcheck:
+    enable: true
+    checks:
+      - SA1019
+      - SA1029
