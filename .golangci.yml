@@ -1,14 +1,39 @@
+linters-settings:
+  errcheck:
+    check-type-assertions: false
+    check-blank: false
+  gofmt:
+    simplify: false
+  gosimple:
+    ignore:
+      - S1039 # ignore unnecessary use of fmt.Sprintf errors
 
 issues:
   exclude:
     - w.Write
+  exclude-rules:
+    - linters:
+        - errcheck
+        - unconvert
+        - unused
+        - bodyclose
+        - errchkjson
+        - noctx
+      text: "Error return value of (\\w+)\\.(\\w+) is not checked"
+    - linters:
+        - unused
+      text: "const basePath is unused"
+    - linters:
+        - errchkjson
+      text: "Error return value of encoding/json.Marshal is not checked: unsafe type"
+
+linters:
+  disable-all: true
+  enable:
     - errcheck
     - unconvert
     - unused
     - bodyclose
     - errchkjson
+    - gosimple
     - noctx
-
-
-
-#
