@@ -2,8 +2,7 @@ linters-settings:
   errcheck:
     check-type-assertions: false
     ignore: |
-      github.com/go-kit/kit/log.Logger.Log
-      github.com/sirupsen/logrus.*
+      github\.com/sirupsen/logrus\..*
   govet:
     check-shadowing: true
   bodyclose:
