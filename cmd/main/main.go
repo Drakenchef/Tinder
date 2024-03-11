@@ -10,7 +10,6 @@ import (
 	likesHandler "github.com/drakenchef/Tinder/internal/pkg/likes/delivery/http"
 	likesRepo "github.com/drakenchef/Tinder/internal/pkg/likes/repo"
 	likesUsecase "github.com/drakenchef/Tinder/internal/pkg/likes/usecase"
-	"github.com/drakenchef/Tinder/internal/pkg/middleware/corsmw"
 	"github.com/drakenchef/Tinder/internal/pkg/middleware/cspxssmw"
 	csrfToken "github.com/drakenchef/Tinder/internal/pkg/middleware/csrfmw"
 	"github.com/drakenchef/Tinder/internal/pkg/middleware/loggermw"
@@ -67,10 +66,10 @@ func main() {
 	cspXssMw := cspxssmw.NewCspXssMW()
 	//hmackHashToken, _ := csrfToken.NewHMACKHashToken("your-secret", sugar)
 	mylogger := loggermw.NewLogger(sugar)
-	corsmw := corsmw.NewCorsMw()
+	//corsmw := corsmw.NewCorsMw()
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
-	r.Use(corsmw.CorsMiddleware)
+	//r.Use(corsmw.CorsMiddleware)
 	r.Use(mylogger.Logging())
 	r.Use(cspXssMw.MiddlewareCSP)
 	r.Use(cspXssMw.MiddlewareXSS)
