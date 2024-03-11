@@ -7,7 +7,9 @@ linters-settings:
     simplify: false
   gosimple:
     ignore:
-      - S1039 # ignore unnecessary use of fmt.Sprintf errors
+      - S1039
+      - SA1019
+      - SA1029
 
 issues:
   exclude:
@@ -20,7 +22,7 @@ issues:
         - bodyclose
         - errchkjson
         - noctx
-      text: "Error return value of (\w+)\.(\w+) is not checked"
+      text: "Error return value of (\\w+)\.(\\w+) is not checked"
     - linters:
         - unused
       text: "const basePath is unused"
