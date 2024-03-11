@@ -41,3 +41,4 @@ linters:
     - gosimple
     - noctx
 
+#
