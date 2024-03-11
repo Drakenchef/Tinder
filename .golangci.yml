@@ -22,7 +22,7 @@ issues:
         - bodyclose
         - errchkjson
         - noctx
-      text: "Error return value of (\\w+)\.(\\w+) is not checked"
+      text: "Error return value of (\\w+)\\.(\\w+) is not checked"
     - linters:
         - unused
       text: "const basePath is unused"
