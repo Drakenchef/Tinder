@@ -1,17 +1,68 @@
 issues:
   exclude:
     - w.Write
-linters-settings:
-  errcheck:
-    check-named-results: false
-  unused:
-    check-exported: true
-  gosimple:
-    enabled: true
-  ineffassign:
-    enabled: true
-  staticcheck:
-    enable: true
-    checks:
-      - SA1019
-      - SA1029
+linters:
+  enable-all: true
+  disable:
+    - varnamelen
+    - depguard
+    - godox
+    - testpackage
+    - exhaustivestruct
+    - wsl
+    - revive
+    - ireturn
+    - exhaustruct
+    - misspell
+    - gomnd
+    - paralleltest
+    - goerr113
+    - rowserrcheck
+    - tagalign
+    - forbidigo
+    - gci
+    - gofumpt
+    - godot
+    - cyclop
+    - goimports
+    - typecheck
+    - gochecknoglobals
+    - goconst
+    - nestif
+    - errname
+    - nilerr
+    - dupword
+    - protogetter
+    - exhaustive
+    - maintidx #???
+    - stylecheck #???
+    - promlinter #???
+    - tagliatelle
+    - usestdlibvars #???
+    - forcetypeassert #???
+    - funlen #del
+    - staticcheck #del
+    - sqlclosecheck #del
+    - inamedparam #err
+    - testifylint #err
+    - gofmt #err
+    - deadcode #warn
+    - golint #warn
+    - scopelint #warn
+    - interfacer #warn
+    - nosnakecase #warn
+    - maligned #warn
+    - structcheck #warn
+    - ifshort #warn
+    - varcheck #warn
+    - wrapcheck #del!!!
+    - whitespace #del!!!
+    - nlreturn  #del!!!
+    - ineffassign #del!!!
+    - wastedassign #del!!!
+    - lll #del!!!
+    - prealloc #del!!!
+    - gosec #del!!!
+    - gocritic #del!!!
+    - dupl #del!!!
+    - containedctx #???
