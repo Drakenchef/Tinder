@@ -1,41 +1,14 @@
 
-linters-settings:
-  errcheck:
-    check-type-assertions: false
-    check-blank: false
-  gofmt:
-    simplify: false
-  gosimple:
-    ignore:
-      - S1039
-      - SA1019
-      - SA1029
-
 issues:
   exclude:
     - w.Write
-  exclude-rules:
-    - linters:
-        - errcheck
-        - unconvert
-        - unused
-        - bodyclose
-        - errchkjson
-        - noctx
-    - linters:
-        - unused
-    - linters:
-        - errchkjson
-
-linters:
-  disable-all: true
-  enable:
     - errcheck
     - unconvert
     - unused
     - bodyclose
     - errchkjson
-    - gosimple
     - noctx
+
+
 
 #
