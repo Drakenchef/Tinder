@@ -1,39 +1,41 @@
 linters-settings:
   errcheck:
     check-type-assertions: false
-    check-blank: false
-  gofmt:
-    simplify: false
-  gosimple:
     ignore:
-      - S1039 # ignore unnecessary use of fmt.Sprintf errors
+      - logger.Sync
+  govet:
+    check-shadowing: true
+  bodyclose:
+    check-defer: false
 
 issues:
   exclude:
-    - w.Write
+    -w.Write
   exclude-rules:
     - linters:
-        - errcheck
         - unconvert
         - unused
-        - bodyclose
         - errchkjson
+        - gosimple
         - noctx
-      text: "Error return value of (\\w+)\\.(\\w+) is not checked"
+      text: "unnecessary conversion"
     - linters:
         - unused
       text: "const basePath is unused"
     - linters:
         - errchkjson
-      text: "Error return value of encoding/json.Marshal is not checked: unsafe type"
+      text: "Error return value of encoding/json.Marshal is not checked"
+    - linters:
+        - gosimple
+      text: "unnecessary use of fmt.Sprintf"
+    - linters:
+        - noctx
+      text: "should rewrite http.NewRequestWithContext or add (*Request).WithContext"
 
 linters:
-  disable-all: true
-  enable:
-    - errcheck
-    - unconvert
-    - unused
-    - bodyclose
-    - errchkjson
-    - gosimple
-    - noctx
+  enable-all: true
+  disable:
+    - gochecknoglobals # Пример отключения конкретного линтера.
+
+
+
