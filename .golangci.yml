@@ -40,3 +40,4 @@ linters:
     - errchkjson
     - gosimple
     - noctx
+
