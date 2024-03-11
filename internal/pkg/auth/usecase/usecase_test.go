@@ -7,6 +7,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"testing"
 )
 
@@ -14,7 +15,8 @@ func TestCreateUser(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	repo := mock.NewMockAuthRepo(ctrl)
-	usecase := NewAuthUsecase(repo)
+	mockLogger := zap.NewExample().Sugar()
+	usecase := NewAuthUsecase(repo, mockLogger)
 	ctx := context.Background()
 	invalidLoginUser := models.SignInInput{
 		Login:    "Невалидный Логин",
@@ -43,7 +45,7 @@ func TestGenerateToken(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	repo := mock.NewMockAuthRepo(ctrl)
-	usecase := NewAuthUsecase(repo)
+	usecase := NewAuthUsecase(repo, &zap.SugaredLogger{})
 	ctx := context.Background()
 
 	input := models.SignInInput{

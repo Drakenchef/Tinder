@@ -1,32 +1,43 @@
 package users
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/drakenchef/Tinder/internal/models"
 	"github.com/drakenchef/Tinder/internal/pkg/users"
 	"github.com/drakenchef/Tinder/internal/utils"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"io"
 	"net/http"
 )
 
 type UsersHandler struct {
 	usersUsecase users.UsersUsecase
+	logger       *zap.SugaredLogger
 }
 
 const maxRequestBodySize = 1024 * 1024 * 5
 
-func NewUsersHandler(usersUsecase users.UsersUsecase) *UsersHandler {
-	return &UsersHandler{usersUsecase: usersUsecase}
+func NewUsersHandler(usersUsecase users.UsersUsecase, logger *zap.SugaredLogger) *UsersHandler {
+	return &UsersHandler{
+		usersUsecase: usersUsecase,
+		logger:       logger,
+	}
 }
 
 func (h *UsersHandler) UsersList(w http.ResponseWriter, r *http.Request) {
-	users, err := h.usersUsecase.UsersList(r.Context())
+	utils.NameFuncLog()
+	ctx := context.WithValue(r.Context(), "id", r.Header.Get("abcd"))
+	//h.logger.Info(ctx.Value("id"))
+	//h.logger.Info("UsersListHandler")
+	users, err := h.usersUsecase.UsersList(ctx)
 	if err != nil {
 		http.Error(w, errors.Wrap(err, "failed to sign up user").Error(), http.StatusInternalServerError)
 		return
 	}
+	//log.Print(r.Header.Get("abcd"))
 	usersJSON, err := json.Marshal(users)
 	if err != nil {
 		http.Error(w, "Error encoding JSON", http.StatusInternalServerError)
@@ -37,6 +48,7 @@ func (h *UsersHandler) UsersList(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UsersHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+	utils.NameFuncLog()
 	var req struct {
 		UID string `json:"uid"`
 	}
@@ -62,6 +74,7 @@ func (h *UsersHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UsersHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
+	utils.NameFuncLog()
 	var user models.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -80,21 +93,9 @@ func (h *UsersHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UsersHandler) UpdateUserImage(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("token")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			http.Error(w, "No cookie present", http.StatusUnauthorized)
-		} else {
-			http.Error(w, "Error retrieving cookie", http.StatusBadRequest)
-		}
-		return
-	}
-	token := cookie.Value
-	uid, err := utils.ParseToken(token)
-	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
+	uidFromContext := r.Header.Get("uid")
+	h.logger.Info("get uid from context: ", uidFromContext)
+	uid, _ := uuid.Parse(uidFromContext)
 
 	limitedReader := http.MaxBytesReader(w, r.Body, maxRequestBodySize)
 	defer r.Body.Close()
@@ -107,10 +108,7 @@ func (h *UsersHandler) UpdateUserImage(w http.ResponseWriter, r *http.Request) {
 
 		} else {
 			w.WriteHeader(http.StatusTooManyRequests)
-			//log.Fatal(err, " ///////////////////////////")
-			//errorMessage := fmt.Sprintf("Ошибка при обновлении изображения пользователя: %v", err)
-			//errJson, _ := json.Marshal(map[string]string{"error": errorMessage})
-			//w.Write(errJson)
+			h.logger.Info("error: %s", err)
 		}
 
 		return
@@ -118,12 +116,54 @@ func (h *UsersHandler) UpdateUserImage(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.usersUsecase.UpdateUserImage(r.Context(), uid, bodyContent, fileFormat)
 	if err != nil {
-		w.WriteHeader(http.StatusTooManyRequests)
-
+		w.WriteHeader(http.StatusInternalServerError)
+		h.logger.Info("error: %s", err)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	userJSON, _ := json.Marshal(user)
 	w.Write(userJSON)
+}
+func (h *UsersHandler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
+	utils.NameFuncLog()
+	uidFromContext := r.Header.Get("uid")
+	h.logger.Info("get uid from context: ", uidFromContext)
+	uid, _ := uuid.Parse(uidFromContext)
+
+	var request models.ChangePassword
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		h.logger.Info(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err := h.usersUsecase.UpdateUserPassword(r.Context(), request, uid)
+	if err != nil {
+		h.logger.Info(err)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+
+}
+
+func (h *UsersHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	utils.NameFuncLog()
+	uidFromContext := r.Header.Get("uid")
+	h.logger.Info("get uid from context: ", uidFromContext)
+	uid, _ := uuid.Parse(uidFromContext)
+
+	var password models.ChangePassword
+	if err := json.NewDecoder(r.Body).Decode(&password); err != nil {
+		h.logger.Info(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if err := h.usersUsecase.DeleteUser(r.Context(), password, uid); err != nil {
+		h.logger.Info(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }

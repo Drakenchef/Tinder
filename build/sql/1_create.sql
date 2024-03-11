@@ -8,3 +8,12 @@ CREATE TABLE IF NOT EXISTS users
     img text,
     salt text
 );
+DROP TABLE IF EXISTS likes CASCADE;
+CREATE TABLE IF NOT EXISTS likes
+(
+    ID SERIAL PRIMARY KEY,
+    uidfirstlike uuid NOT NULL,
+    uidsecondlike uuid NOT NULL,
+    Date TIMESTAMP NOT NULL,
+    Mutual BOOLEAN NOT NULL
+);

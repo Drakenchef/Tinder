@@ -6,7 +6,9 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"log"
 	"net/http"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -74,4 +76,9 @@ func ParseToken(accessToken string) (uuid.UUID, error) {
 		return uuid.Nil, errors.New("token claims are not of type *tokenClaims")
 	}
 	return claims.UID, nil
+}
+
+func NameFuncLog() {
+	pc, file, line, _ := runtime.Caller(1)
+	log.Printf("[cgl] debug %s:%d %v", file, line, runtime.FuncForPC(pc).Name())
 }

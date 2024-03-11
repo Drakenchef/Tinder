@@ -6,7 +6,6 @@ package mock
 
 import (
 	context "context"
-	multipart "mime/multipart"
 	reflect "reflect"
 
 	models "github.com/drakenchef/Tinder/internal/models"
@@ -35,6 +34,20 @@ func NewMockUsersUsecase(ctrl *gomock.Controller) *MockUsersUsecase {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockUsersUsecase) EXPECT() *MockUsersUsecaseMockRecorder {
 	return m.recorder
+}
+
+// DeleteUser mocks base method.
+func (m *MockUsersUsecase) DeleteUser(arg0 context.Context, arg1 models.ChangePassword, arg2 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteUser", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteUser indicates an expected call of DeleteUser.
+func (mr *MockUsersUsecaseMockRecorder) DeleteUser(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockUsersUsecase)(nil).DeleteUser), arg0, arg1, arg2)
 }
 
 // GetUser mocks base method.
@@ -68,7 +81,7 @@ func (mr *MockUsersUsecaseMockRecorder) UpdateUser(arg0, arg1 interface{}) *gomo
 }
 
 // UpdateUserImage mocks base method.
-func (m *MockUsersUsecase) UpdateUserImage(arg0 context.Context, arg1 uuid.UUID, arg2 multipart.File, arg3 *multipart.FileHeader) (models.User, error) {
+func (m *MockUsersUsecase) UpdateUserImage(arg0 context.Context, arg1 uuid.UUID, arg2 []byte, arg3 string) (models.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateUserImage", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(models.User)
@@ -80,6 +93,20 @@ func (m *MockUsersUsecase) UpdateUserImage(arg0 context.Context, arg1 uuid.UUID,
 func (mr *MockUsersUsecaseMockRecorder) UpdateUserImage(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserImage", reflect.TypeOf((*MockUsersUsecase)(nil).UpdateUserImage), arg0, arg1, arg2, arg3)
+}
+
+// UpdateUserPassword mocks base method.
+func (m *MockUsersUsecase) UpdateUserPassword(arg0 context.Context, arg1 models.ChangePassword, arg2 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserPassword", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUserPassword indicates an expected call of UpdateUserPassword.
+func (mr *MockUsersUsecaseMockRecorder) UpdateUserPassword(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserPassword", reflect.TypeOf((*MockUsersUsecase)(nil).UpdateUserPassword), arg0, arg1, arg2)
 }
 
 // UsersList mocks base method.
@@ -120,6 +147,35 @@ func (m *MockUsersRepo) EXPECT() *MockUsersRepoMockRecorder {
 	return m.recorder
 }
 
+// DeleteUser mocks base method.
+func (m *MockUsersRepo) DeleteUser(arg0 context.Context, arg1 models.ChangePassword, arg2 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteUser", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteUser indicates an expected call of DeleteUser.
+func (mr *MockUsersRepoMockRecorder) DeleteUser(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockUsersRepo)(nil).DeleteUser), arg0, arg1, arg2)
+}
+
+// GetSaltByUid mocks base method.
+func (m *MockUsersRepo) GetSaltByUid(arg0 context.Context, arg1 uuid.UUID) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSaltByUid", arg0, arg1)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetSaltByUid indicates an expected call of GetSaltByUid.
+func (mr *MockUsersRepoMockRecorder) GetSaltByUid(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSaltByUid", reflect.TypeOf((*MockUsersRepo)(nil).GetSaltByUid), arg0, arg1)
+}
+
 // GetUser mocks base method.
 func (m *MockUsersRepo) GetUser(arg0 context.Context, arg1 uuid.UUID) (models.User, error) {
 	m.ctrl.T.Helper()
@@ -151,18 +207,31 @@ func (mr *MockUsersRepoMockRecorder) UpdateUser(arg0, arg1 interface{}) *gomock.
 }
 
 // UpdateUserImage mocks base method.
-func (m *MockUsersRepo) UpdateUserImage(arg0 context.Context, arg1 uuid.UUID, arg2 multipart.File, arg3 *multipart.FileHeader) (models.User, error) {
+func (m *MockUsersRepo) UpdateUserImage(arg0 context.Context, arg1 uuid.UUID, arg2 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateUserImage", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(models.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "UpdateUserImage", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // UpdateUserImage indicates an expected call of UpdateUserImage.
-func (mr *MockUsersRepoMockRecorder) UpdateUserImage(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockUsersRepoMockRecorder) UpdateUserImage(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserImage", reflect.TypeOf((*MockUsersRepo)(nil).UpdateUserImage), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserImage", reflect.TypeOf((*MockUsersRepo)(nil).UpdateUserImage), arg0, arg1, arg2)
+}
+
+// UpdateUserPassword mocks base method.
+func (m *MockUsersRepo) UpdateUserPassword(arg0 context.Context, arg1 models.ChangePassword, arg2 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserPassword", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUserPassword indicates an expected call of UpdateUserPassword.
+func (mr *MockUsersRepoMockRecorder) UpdateUserPassword(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserPassword", reflect.TypeOf((*MockUsersRepo)(nil).UpdateUserPassword), arg0, arg1, arg2)
 }
 
 // UsersList mocks base method.

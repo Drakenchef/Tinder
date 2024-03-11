@@ -10,6 +10,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/microcosm-cc/bluemonday"
+	"go.uber.org/zap"
 
 	"time"
 )
@@ -22,10 +23,11 @@ const (
 type AuthUsecase struct {
 	authRepo auth.AuthRepo
 	auther   auth.Auther
+	logger   *zap.SugaredLogger
 }
 
-func NewAuthUsecase(authRepo auth.AuthRepo) *AuthUsecase {
-	return &AuthUsecase{authRepo: authRepo, auther: &Auther{}}
+func NewAuthUsecase(authRepo auth.AuthRepo, logger *zap.SugaredLogger) *AuthUsecase {
+	return &AuthUsecase{authRepo: authRepo, auther: &Auther{}, logger: logger}
 }
 
 type tokenClaims struct {
@@ -34,8 +36,10 @@ type tokenClaims struct {
 }
 
 func (u *AuthUsecase) CreateUser(ctx context.Context, user models.SignInInput) error {
+	utils.NameFuncLog()
 	validate := validator.New()
 	if err := validate.Struct(user); err != nil {
+		u.logger.Info(err)
 		return errors.New("validation failed")
 	}
 	p := bluemonday.UGCPolicy()
@@ -45,6 +49,7 @@ func (u *AuthUsecase) CreateUser(ctx context.Context, user models.SignInInput) e
 	user.Password = u.auther.GeneratePasswordHash(user.Password + salt)
 	err := u.authRepo.CreateUser(ctx, user, salt)
 	if err != nil {
+		u.logger.Info(err)
 		return err
 	}
 
@@ -52,8 +57,10 @@ func (u *AuthUsecase) CreateUser(ctx context.Context, user models.SignInInput) e
 }
 
 func (u *AuthUsecase) GenerateToken(ctx context.Context, input models.SignInInput) (string, error) {
+	utils.NameFuncLog()
 	validate := validator.New()
 	if err := validate.Struct(input); err != nil {
+		u.logger.Info(err)
 		return "", errors.New("validation failed")
 	}
 
@@ -63,10 +70,12 @@ func (u *AuthUsecase) GenerateToken(ctx context.Context, input models.SignInInpu
 
 	salt, err := u.authRepo.GetSaltByLogin(ctx, input.Login)
 	if err != nil {
+		u.logger.Info(err)
 		return "", err
 	}
 	user, err := u.authRepo.GetUser(ctx, input.Login, u.auther.GeneratePasswordHash(input.Password+salt))
 	if err != nil {
+		u.logger.Info(err)
 		return "", err
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{

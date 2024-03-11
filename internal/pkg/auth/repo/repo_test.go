@@ -5,6 +5,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/drakenchef/Tinder/internal/models"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"log"
 	"testing"
 )
@@ -15,8 +16,8 @@ func TestCreateUser(t *testing.T) {
 		log.Fatal(err)
 	}
 	defer db.Close()
-
-	r := NewAuthRepo(db)
+	mockLogger := zap.NewExample().Sugar()
+	r := NewAuthRepo(db, mockLogger)
 
 	user := models.SignInInput{
 		Login:    "testUser",
@@ -24,11 +25,11 @@ func TestCreateUser(t *testing.T) {
 	}
 	ctx := context.Background()
 	salt := "salt"
-	mock.ExpectExec("INSERT INTO users").WithArgs(sqlmock.AnyArg(), user.Login, user.Password, salt).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec("INSERT INTO users").WithArgs(sqlmock.AnyArg(), user.Login, user.Password, salt, sqlmock.AnyArg(), sqlmock.AnyArg()).WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err = r.CreateUser(ctx, user, salt)
 	if err != nil {
-		t.Errorf("error was not expected: %s", err)
+		t.Errorf("error was expected: %s", err)
 	}
 }
 
@@ -69,7 +70,7 @@ func TestGetSaltByLogin(t *testing.T) {
 	}
 	defer db.Close()
 
-	r := NewAuthRepo(db)
+	r := NewAuthRepo(db, &zap.SugaredLogger{})
 
 	ctx := context.Background()
 	login := "testUser"

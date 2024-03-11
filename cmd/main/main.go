@@ -7,6 +7,13 @@ import (
 	authHandler "github.com/drakenchef/Tinder/internal/pkg/auth/delivery/http"
 	authRepo "github.com/drakenchef/Tinder/internal/pkg/auth/repo"
 	authUsecase "github.com/drakenchef/Tinder/internal/pkg/auth/usecase"
+	likesHandler "github.com/drakenchef/Tinder/internal/pkg/likes/delivery/http"
+	likesRepo "github.com/drakenchef/Tinder/internal/pkg/likes/repo"
+	likesUsecase "github.com/drakenchef/Tinder/internal/pkg/likes/usecase"
+	"github.com/drakenchef/Tinder/internal/pkg/middleware/corsmw"
+	"github.com/drakenchef/Tinder/internal/pkg/middleware/cspxssmw"
+	csrfToken "github.com/drakenchef/Tinder/internal/pkg/middleware/csrfmw"
+	"github.com/drakenchef/Tinder/internal/pkg/middleware/loggermw"
 	usersHandler "github.com/drakenchef/Tinder/internal/pkg/users/delivery/http"
 	usersRepo "github.com/drakenchef/Tinder/internal/pkg/users/repo"
 	usersUsecase "github.com/drakenchef/Tinder/internal/pkg/users/usecase"
@@ -14,8 +21,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 	"net/http"
 	"os"
 	"os/signal"
@@ -24,12 +31,15 @@ import (
 )
 
 func main() {
-	logrus.SetFormatter(new(logrus.JSONFormatter))
+	logger, _ := zap.NewDevelopment()
+	defer logger.Sync()
+	sugar := logger.Sugar()
+
 	if err := InitConfig(); err != nil {
-		logrus.Fatalf("error initializing configs: %s", err.Error())
+		sugar.Fatalf("error initializing configs: %s", err.Error())
 	}
 	if err := godotenv.Load(); err != nil {
-		logrus.Fatalf("error loading env variables: %s", err.Error())
+		sugar.Fatalf("error occured while running http server: %s", err.Error())
 	}
 	db, err := NewPostgresDB(Config{
 		Host:     viper.GetString("db.host"),
@@ -40,18 +50,30 @@ func main() {
 		SSLMode:  viper.GetString("db.sslmode"),
 	})
 	if err != nil {
-		logrus.Fatalf("failed to initialize db: %s", err.Error())
+		sugar.Fatalf("failed to initialize db: %s", err.Error())
 	}
-	authRepo := authRepo.NewAuthRepo(db)
-	authUsecase := authUsecase.NewAuthUsecase(authRepo)
-	authHandler := authHandler.NewAuthHandler(authUsecase)
+	authRepo := authRepo.NewAuthRepo(db, sugar)
+	authUsecase := authUsecase.NewAuthUsecase(authRepo, sugar)
+	authHandler := authHandler.NewAuthHandler(authUsecase, sugar)
 
-	usersRepo := usersRepo.NewUsersRepo(db)
-	usersUsecase := usersUsecase.NewUsersUsecase(usersRepo)
-	usersHandler := usersHandler.NewUsersHandler(usersUsecase)
+	usersRepo := usersRepo.NewUsersRepo(db, sugar)
+	usersUsecase := usersUsecase.NewUsersUsecase(usersRepo, sugar)
+	usersHandler := usersHandler.NewUsersHandler(usersUsecase, sugar)
+
+	likesRepo := likesRepo.NewLikesRepo(db, sugar)
+	likesUsecase := likesUsecase.NewLikesUsecase(likesRepo, sugar)
+	likesHandler := likesHandler.NewLikesHandler(likesUsecase, sugar)
+
+	cspXssMw := cspxssmw.NewCspXssMW()
+	//hmackHashToken, _ := csrfToken.NewHMACKHashToken("your-secret", sugar)
+	mylogger := loggermw.NewLogger(sugar)
+	corsmw := corsmw.NewCorsMw()
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
-	//r.Use(Check)
+	r.Use(corsmw.CorsMiddleware)
+	r.Use(mylogger.Logging())
+	r.Use(cspXssMw.MiddlewareCSP)
+	r.Use(cspXssMw.MiddlewareXSS)
 	auth := r.PathPrefix("/auth").Subrouter()
 	{
 		auth.Handle("/signup", http.HandlerFunc(authHandler.SignUp)).
@@ -72,6 +94,18 @@ func main() {
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
 		user.Handle("/image", http.HandlerFunc(usersHandler.UpdateUserImage)).
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+		user.Handle("/password", http.HandlerFunc(usersHandler.UpdateUserPassword)).
+			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+		user.Handle("/deleteuser", http.HandlerFunc(usersHandler.DeleteUser)).
+			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+	}
+	likes := r.PathPrefix("/likes").Subrouter()
+	likes.Use(Check)
+	{
+		likes.Handle("/like", http.HandlerFunc(likesHandler.LikeUser)).
+			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+		likes.Handle("/mutuallike", http.HandlerFunc(likesHandler.MutualLikeUser)).
+			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
 	}
 
 	r.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -82,38 +116,75 @@ func main() {
 	srv := new(Server)
 	go func() {
 		if err := srv.Run(viper.GetString("port"), r); err != nil {
-			logrus.Fatalf("error occured while running http server: %s", err.Error())
+			sugar.Fatalf("error occured while running http server: %s", err.Error())
 		}
 	}()
-	logrus.Print("Tinder Started")
+	sugar.Info("Tinder started")
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 	<-quit
-	logrus.Print("Tinder Shutting Down")
+	sugar.Info("Tinder shutdown")
+
 	if err := srv.Shutdown(context.Background()); err != nil {
-		logrus.Errorf("error occured on server shutting down: %s", err.Error())
+		sugar.Fatalf("error occured on server shutting down: %s", err.Error())
 	}
 	if err := db.Close(); err != nil {
-		logrus.Errorf("error occured on db connection close: %s", err.Error())
+		sugar.Fatalf("error occured on db connection close: %s", err.Error())
 	}
 
 }
 
-//func CORSMethodMiddleware(next http.Handler) http.Handler {
-//	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-//		logrus.Print(req.Host)
-//		next.ServeHTTP(w, req)
-//	})
-//}
+func MiddlewareCSRFCheck(hmackHashToken *csrfToken.HashToken) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			uid, err := utils.CheckAuth(r)
+			if err != nil {
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+			if r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete {
+				csrfToken := r.Header.Get("X-CSRF-Token")
+				valid, err := hmackHashToken.Check(uid, csrfToken)
+				if err != nil || !valid {
+					http.Error(w, err.Error(), http.StatusForbidden)
+					return
+				}
+			}
 
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+func MiddlewareCSRFSet(hmackHashToken *csrfToken.HashToken) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			tokenExpTime := int64(3600)
+			uid, err := utils.CheckAuth(r)
+			if err != nil {
+				w.WriteHeader(http.StatusForbidden)
+				return
+			}
+			if r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete {
+				csrfToken, err := hmackHashToken.Create(uid, tokenExpTime)
+				if err != nil {
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+				w.Header().Set("X-CSRF-Token", csrfToken)
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
 func Check(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		_, err := utils.CheckAuth(req)
+		uid, err := utils.CheckAuth(req)
 		if err != nil {
 			w.WriteHeader(http.StatusForbidden)
 			return
 		}
+		req.Header.Set("uid", uid.String())
 		next.ServeHTTP(w, req)
 	})
 }
@@ -123,8 +194,6 @@ func InitConfig() error {
 	viper.SetConfigName("config")
 	return viper.ReadInConfig()
 }
-
-// init db
 
 type Config struct {
 	Host     string
@@ -147,8 +216,6 @@ func NewPostgresDB(cfg Config) (*sql.DB, error) {
 	}
 	return db, nil
 }
-
-//init server
 
 type Server struct {
 	httpServer *http.Server

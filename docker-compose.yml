@@ -15,6 +15,7 @@ services:
     volumes:
       - ./configs:/out/configs
       - ./.env:/out/.env
+      - images_vol:/app/images
     restart: always
     networks:
       - my-network
