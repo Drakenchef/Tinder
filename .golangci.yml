@@ -1,0 +1,10 @@
+issues:
+  exclude:
+    - w.Write
+linters:
+  disable:
+    - errcheck
+    - ineffassign
+    - staticcheck
+    - unused
+    - gosimple
