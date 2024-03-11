@@ -24,7 +24,7 @@ issues:
       text: "const basePath is unused"
     - linters:
         - errchkjson
-      text: "Error return value of encoding/json.Marshal is not checked"
+      text: "Error return value of encoding//json.Marshal is not checked"
     - linters:
         - gosimple
       text: "unnecessary use of fmt.Sprintf"
