@@ -2,10 +2,10 @@ package auth
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/drakenchef/Tinder/internal/models"
 	"github.com/drakenchef/Tinder/internal/pkg/auth"
 	"github.com/drakenchef/Tinder/internal/utils"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"net/http"
 )
@@ -71,10 +71,10 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 
 func (h *AuthHandler) CheckAuth(w http.ResponseWriter, r *http.Request) {
 	utils.NameFuncLog()
-	userId, err := utils.CheckAuth(r)
-	fmt.Println(userId)
-	if err != nil {
-		h.logger.Info(err)
+	uidFromContext := r.Header.Get("uid")
+	h.logger.Info("get uid from context: ", uidFromContext)
+	uid, _ := uuid.Parse(uidFromContext)
+	if uid == uuid.Nil {
 		w.WriteHeader(http.StatusForbidden)
 	} else {
 		w.WriteHeader(http.StatusOK)

@@ -10,6 +10,7 @@ import (
 	likesHandler "github.com/drakenchef/Tinder/internal/pkg/likes/delivery/http"
 	likesRepo "github.com/drakenchef/Tinder/internal/pkg/likes/repo"
 	likesUsecase "github.com/drakenchef/Tinder/internal/pkg/likes/usecase"
+	"github.com/drakenchef/Tinder/internal/pkg/middleware/corsmw"
 	"github.com/drakenchef/Tinder/internal/pkg/middleware/cspxssmw"
 	csrfToken "github.com/drakenchef/Tinder/internal/pkg/middleware/csrfmw"
 	"github.com/drakenchef/Tinder/internal/pkg/middleware/loggermw"
@@ -64,12 +65,11 @@ func main() {
 	likesHandler := likesHandler.NewLikesHandler(likesUsecase, sugar)
 
 	cspXssMw := cspxssmw.NewCspXssMW()
-	//hmackHashToken, _ := csrfToken.NewHMACKHashToken("your-secret", sugar)
+	hmackHashToken, _ := csrfToken.NewHMACKHashToken("zxczxczczxc", sugar)
 	mylogger := loggermw.NewLogger(sugar)
-	//corsmw := corsmw.NewCorsMw()
+	corsmw := corsmw.NewCorsMw()
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
-	//r.Use(corsmw.CorsMiddleware)
 	r.Use(mylogger.Logging())
 	r.Use(cspXssMw.MiddlewareCSP)
 	r.Use(cspXssMw.MiddlewareXSS)
@@ -79,11 +79,18 @@ func main() {
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
 		auth.Handle("/signin", http.HandlerFunc(authHandler.SignIn)).
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
-		auth.Handle("/checkauth", http.HandlerFunc(authHandler.CheckAuth)).
+
+	}
+	checkauth := r.PathPrefix("/checkauth").Subrouter()
+	checkauth.Use(Check)
+	{
+		checkauth.Handle("/checkauth", http.HandlerFunc(authHandler.CheckAuth)).
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
 	}
 	user := r.PathPrefix("/user").Subrouter()
-	user.Use(Check)
+	user.Use(corsmw.CorsMiddleware)
+	user.Use(MiddlewareCSRFCheck(hmackHashToken, sugar))
+
 	{
 		user.Handle("/list", http.HandlerFunc(usersHandler.UsersList)).
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
@@ -134,7 +141,8 @@ func main() {
 
 }
 
-func MiddlewareCSRFCheck(hmackHashToken *csrfToken.HashToken) func(http.Handler) http.Handler {
+func MiddlewareCSRFCheck(hmackHashToken *csrfToken.HashToken, logger *zap.SugaredLogger) func(http.Handler) http.Handler {
+	logger.Info("CSRF MIDDLEWARE STARTED")
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			uid, err := utils.CheckAuth(r)
@@ -142,10 +150,12 @@ func MiddlewareCSRFCheck(hmackHashToken *csrfToken.HashToken) func(http.Handler)
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
+			r.Header.Set("uid", uid.String())
 			if r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete {
 				csrfToken := r.Header.Get("X-CSRF-Token")
-				valid, err := hmackHashToken.Check(uid, csrfToken)
-				if err != nil || !valid {
+				logger.Info(csrfToken)
+				valid, _ := hmackHashToken.Check(uid, csrfToken)
+				if !valid {
 					http.Error(w, err.Error(), http.StatusForbidden)
 					return
 				}

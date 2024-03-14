@@ -6,6 +6,7 @@ import (
 	"github.com/drakenchef/Tinder/internal/models"
 	mock "github.com/drakenchef/Tinder/internal/pkg/auth/mocks"
 	"github.com/golang/mock/gomock"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"net/http"
 	"net/http/httptest"
@@ -76,4 +77,45 @@ func TestSignIn(t *testing.T) {
 		t.Fatal("auth_token cookie not set in response")
 	}
 
+}
+
+func TestCheckAuth(t *testing.T) {
+	// Создание тестовых кейсов
+	testCases := []struct {
+		name       string
+		uid        string
+		wantStatus int
+	}{
+		{"Valid UUID", uuid.New().String(), http.StatusOK},
+		{"Invalid UUID", "", http.StatusForbidden},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Создаем логгер
+			mockLogger := zap.NewExample().Sugar()
+
+			// Создаем HTTP запрос с заголовком, который содержит UID
+			req, err := http.NewRequest("GET", "/checkauth", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if tc.uid != "" {
+				req.Header.Set("uid", tc.uid)
+			}
+
+			// Создаем ResponseRecorder для записи ответа
+			rr := httptest.NewRecorder()
+
+			// Используем AuthHandler для обработки запроса
+			handler := &AuthHandler{logger: mockLogger}
+			http.HandlerFunc(handler.CheckAuth).ServeHTTP(rr, req)
+
+			// Проверяем статус код ответа
+			if status := rr.Code; status != tc.wantStatus {
+				t.Errorf("handler returned wrong status code: got %v want %v",
+					status, tc.wantStatus)
+			}
+		})
+	}
 }

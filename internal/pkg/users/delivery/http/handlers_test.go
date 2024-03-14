@@ -32,15 +32,18 @@ func TestGetUser(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	// создание мока usecase
 	usecase := mock.NewMockUsersUsecase(ctrl)
-	handler := NewUsersHandler(usecase, nil) // nil можно заменить на реальный экземпляр логгера, если он нужен
+	// создание заглушки логгера вместо nil
+	logger := zap.NewExample().Sugar()
+
+	handler := NewUsersHandler(usecase, logger)
 
 	testUserId := uuid.New()
 	testUser := models.User{
 		UID:   testUserId,
 		Login: "TestUserLogin",
 	}
-
 	usecase.EXPECT().GetUser(gomock.Any(), gomock.Eq(testUserId)).Return(testUser, nil).Times(1)
 
 	reqBody, _ := json.Marshal(map[string]string{
@@ -48,11 +51,11 @@ func TestGetUser(t *testing.T) {
 	})
 	r := httptest.NewRequest(http.MethodGet, "/get", bytes.NewReader(reqBody))
 	w := httptest.NewRecorder()
+	r.Header.Set("uid", testUserId.String())
 
 	handler.GetUser(w, r)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-
 }
 
 func TestUpdateUser(t *testing.T) {

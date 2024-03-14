@@ -18,6 +18,5 @@ type AuthRepo interface {
 }
 
 type Auther interface {
-	//CheckAuth(*http.Request) (uuid.UUID, error)
 	GeneratePasswordHash(string) string
 }
