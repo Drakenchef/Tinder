@@ -100,6 +100,8 @@ func main() {
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
 		user.Handle("/image", http.HandlerFunc(usersHandler.UpdateUserImage)).
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+		user.Handle("/deleteimage", http.HandlerFunc(usersHandler.DeleteUserImage)).
+			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
 		user.Handle("/password", http.HandlerFunc(usersHandler.UpdateUserPassword)).
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
 		user.Handle("/deleteuser", http.HandlerFunc(usersHandler.DeleteUser)).

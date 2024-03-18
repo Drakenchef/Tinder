@@ -22,11 +22,14 @@ func NewAuthRepo(db *sql.DB, logger *zap.SugaredLogger) *AuthRepo {
 func (r *AuthRepo) CreateUser(ctx context.Context, user models.SignInInput, salt string) error {
 	utils.NameFuncLog()
 	uid := uuid.New()
-	_, err := r.db.ExecContext(ctx, "INSERT INTO users (uid, login, passwordhash, salt, img, description) VALUES ($1, $2, $3, $4,$5,$6)", uid, user.Login, user.Password, salt, "default.jpg", " ")
+
+	_, err := r.db.ExecContext(ctx, "INSERT INTO users (uid, login, passwordhash, salt, description) VALUES ($1, $2, $3, $4, $5)",
+		uid, user.Login, user.Password, salt, " ")
 	if err != nil {
 		r.logger.Info(err)
 		return errors.New("failed to create user in database")
 	}
+
 	return nil
 }
 func (r *AuthRepo) GetUser(ctx context.Context, login, password string) (models.User, error) {

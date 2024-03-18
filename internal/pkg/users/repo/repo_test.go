@@ -5,110 +5,75 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/drakenchef/Tinder/internal/models"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 	"log"
+	"regexp"
 	"testing"
 )
 
 func TestUsersList(t *testing.T) {
 	db, mock, err := sqlmock.New()
-	if err != nil {
-		log.Fatal(err)
-	}
+	assert.NoError(t, err)
 	defer db.Close()
 
-	r := &UsersRepo{db: db}
-
-	expectedUsers := []models.User{
-		{UID: uuid.New(), Login: "user1", Image: "img1", Description: "description1"},
-		{UID: uuid.New(), Login: "user2", Image: "img2", Description: "description2"},
+	mockUsers := []models.User{
+		{UID: uuid.New(), Login: "user1", Description: "A user"},
+		{UID: uuid.New(), Login: "user2", Description: "Another user"},
 	}
 
-	rows := sqlmock.NewRows([]string{"uid", "login", "img", "description"}).
-		AddRow(expectedUsers[0].UID, expectedUsers[0].Login, expectedUsers[0].Image, expectedUsers[0].Description).
-		AddRow(expectedUsers[1].UID, expectedUsers[1].Login, expectedUsers[1].Image, expectedUsers[1].Description)
-	mock.ExpectQuery("SELECT uid, login, img, description FROM users").
-		WillReturnRows(rows)
+	rows := sqlmock.NewRows([]string{"uid", "login", "description"}).
+		AddRow(mockUsers[0].UID, mockUsers[0].Login, mockUsers[0].Description).
+		AddRow(mockUsers[1].UID, mockUsers[1].Login, mockUsers[1].Description)
 
-	ctx := context.Background()
-
-	result, err := r.UsersList(ctx)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err)
-	}
-
-	if len(result) != 2 {
-		t.Errorf("unexpected number of users, expected 2, got %d", len(result))
-	}
-
-	for i, user := range result {
-		if user.UID != expectedUsers[i].UID {
-			t.Errorf("unexpected UID, expected %s, got %s", expectedUsers[i].UID, user.UID)
-		}
-		if user.Login != expectedUsers[i].Login {
-			t.Errorf("unexpected login, expected %s, got %s", expectedUsers[i].Login, user.Login)
-		}
-		if user.Image != expectedUsers[i].Image {
-			t.Errorf("unexpected image, expected %s, got %s", expectedUsers[i].Image, user.Image)
-		}
-		if user.Description != expectedUsers[i].Description {
-			t.Errorf("unexpected description, expected %s, got %s", expectedUsers[i].Description, user.Description)
-		}
-	}
-
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("there were unfulfilled expectations: %s", err)
-	}
+	mock.ExpectQuery("SELECT uid, login, description FROM users").WillReturnRows(rows)
+	mockLogger := zap.NewExample().Sugar()
+	repo := NewUsersRepo(db, mockLogger)
+	users, err := repo.UsersList(context.Background())
+	assert.NoError(t, err)
+	assert.NotNil(t, users)
+	assert.Equal(t, len(mockUsers), len(users))
+	assert.Equal(t, mockUsers, users)
 }
+
 func TestGetUser(t *testing.T) {
 	db, mock, err := sqlmock.New()
-	if err != nil {
-		log.Fatal(err)
-	}
+	assert.NoError(t, err)
 	defer db.Close()
 
-	r := &UsersRepo{db: db}
+	userID := uuid.New()
+	userRows := sqlmock.NewRows([]string{"uid", "login", "description"}).
+		AddRow(userID, "testuser", "Test Description")
+	imageRows := sqlmock.NewRows([]string{"id", "url", "user_id"}).
+		AddRow(1, "http://example.com/image.jpg", userID)
 
-	expectedUser := models.User{
-		UID:         uuid.New(),
-		Login:       "user1",
-		Image:       "image1",
-		Description: "description1",
-	}
+	mock.ExpectQuery("SELECT uid, login, description FROM users WHERE uid =").
+		WithArgs(userID).
+		WillReturnRows(userRows)
 
-	rows := sqlmock.NewRows([]string{"uid", "login", "img", "description"}).
-		AddRow(expectedUser.UID, expectedUser.Login, expectedUser.Image, expectedUser.Description)
-
-	mock.ExpectQuery("SELECT uid, login, img, description FROM users").
-		WithArgs(expectedUser.UID).
-		WillReturnRows(rows)
+	mock.ExpectQuery("SELECT id, url, user_id FROM images WHERE user_id =").
+		WithArgs(userID).
+		WillReturnRows(imageRows)
 
 	ctx := context.Background()
-
-	user, err := r.GetUser(ctx, expectedUser.UID)
+	mockLogger := zap.NewExample().Sugar()
+	repo := NewUsersRepo(db, mockLogger)
+	user, err := repo.GetUser(ctx, userID)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 	}
-
-	if user.UID != expectedUser.UID {
-		t.Errorf("unexpected UID, expected %s, got %s", expectedUser.UID, user.UID)
+	if user.UID != userID {
+		t.Errorf("expected userID %s, got %s", userID, user.UID)
 	}
-
-	if user.Login != expectedUser.Login {
-		t.Errorf("unexpected login, expected %s, got %s", expectedUser.Login, user.Login)
-	}
-
-	if user.Image != expectedUser.Image {
-		t.Errorf("unexpected image, expected %s, got %s", expectedUser.Image, user.Image)
-	}
-
-	if user.Description != expectedUser.Description {
-		t.Errorf("unexpected description, expected %s, got %s", expectedUser.Description, user.Description)
+	if len(user.Images) != 1 {
+		t.Errorf("expected 1 image, got %d", len(user.Images))
 	}
 
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
+
 func TestUpdateUser(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -155,29 +120,29 @@ func TestUpdateUser(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
+
 func TestUpdateUserImage(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
-		log.Fatal(err)
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
+	mockLogger := zap.NewExample().Sugar()
+	repo := NewUsersRepo(db, mockLogger)
 
-	r := &UsersRepo{db: db}
+	testUID := uuid.New()
+	testImageName := "test-image.jpg"
 
-	userID := uuid.New()
-	imageName := "newimage.jpg"
-
-	mock.ExpectExec("UPDATE users SET img=").
-		WithArgs(imageName, userID).
+	mock.ExpectExec(regexp.QuoteMeta("INSERT INTO images (url, user_id) VALUES ($1, $2);")).
+		WithArgs(testImageName, testUID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	ctx := context.Background()
-
-	err = r.UpdateUserImage(ctx, userID, imageName)
+	err = repo.UpdateUserImage(context.Background(), testUID, testImageName)
 	if err != nil {
-		t.Errorf("unexpected error: %s", err)
+		t.Errorf("error was not expected while updating image: %s", err)
 	}
 
+	// Проверяем, выполнены ли все ожидания
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
@@ -267,6 +232,35 @@ func TestDeleteUser(t *testing.T) {
 	ctx := context.Background()
 
 	err = r.DeleteUser(ctx, password, userID)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestDeleteUserImage(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	logger := zap.NewExample().Sugar()
+	r := &UsersRepo{db: db, logger: logger}
+
+	image := "http://example.com/image.jpg"
+	uid := uuid.New()
+
+	mock.ExpectExec("DELETE FROM images WHERE url = (.+) AND user_id = (.+)").
+		WithArgs(image, uid).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+
+	ctx := context.Background()
+
+	err = r.DeleteUserImage(ctx, image, uid)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 	}

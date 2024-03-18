@@ -1,12 +1,20 @@
-DROP TABLE IF EXISTS users CASCADE;
-CREATE TABLE IF NOT EXISTS users
+DROP TABLE IF EXISTS images;
+DROP TABLE IF EXISTS users;
+
+CREATE TABLE users
 (
-    uid uuid not null unique,
+    uid uuid PRIMARY KEY,
     login text NOT NULL UNIQUE,
     passwordhash text NOT NULL,
     description text,
-    img text,
     salt text
+);
+
+CREATE TABLE images
+(
+    id SERIAL PRIMARY KEY,
+    url text NOT NULL,
+    user_id uuid REFERENCES users(uid) ON DELETE CASCADE
 );
 DROP TABLE IF EXISTS likes CASCADE;
 CREATE TABLE IF NOT EXISTS likes

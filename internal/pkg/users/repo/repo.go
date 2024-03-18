@@ -29,14 +29,14 @@ const ImageStoragePath = "/app/images"
 func (r *UsersRepo) UsersList(ctx context.Context) ([]models.User, error) {
 	utils.NameFuncLog()
 	var users []models.User
-	rows, err := r.db.QueryContext(ctx, "SELECT uid, login, img, description FROM users")
+	rows, err := r.db.QueryContext(ctx, "SELECT uid, login, description FROM users")
 	if err != nil {
 		r.logger.Info(err)
 		return []models.User{}, err
 	}
 	for rows.Next() {
 		var user models.User
-		err := rows.Scan(&user.UID, &user.Login, &user.Image, &user.Description)
+		err := rows.Scan(&user.UID, &user.Login, &user.Description)
 		if err != nil {
 			r.logger.Info(err)
 			return []models.User{}, err
@@ -49,13 +49,30 @@ func (r *UsersRepo) UsersList(ctx context.Context) ([]models.User, error) {
 func (r *UsersRepo) GetUser(ctx context.Context, userID uuid.UUID) (models.User, error) {
 	utils.NameFuncLog()
 	var user models.User
-	query := "SELECT uid, login, img, description FROM users WHERE uid = $1"
-	row := r.db.QueryRowContext(ctx, query, userID)
-	err := row.Scan(&user.UID, &user.Login, &user.Image, &user.Description)
+	userQuery := "SELECT uid, login, description FROM users WHERE uid = $1"
+	err := r.db.QueryRowContext(ctx, userQuery, userID).Scan(&user.UID, &user.Login, &user.Description)
 	if err != nil {
 		r.logger.Info(err)
 		return models.User{}, err
 	}
+
+	imagesQuery := "SELECT id, url, user_id FROM images WHERE user_id = $1"
+	rows, err := r.db.QueryContext(ctx, imagesQuery, userID)
+	if err != nil {
+		r.logger.Info(err)
+		return models.User{}, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var img models.Image
+		if err := rows.Scan(&img.ID, &img.URL, &img.UserID); err != nil {
+			r.logger.Info(err)
+			return models.User{}, err
+		}
+		user.Images = append(user.Images, img)
+	}
+
 	return user, nil
 }
 
@@ -82,11 +99,24 @@ func (r *UsersRepo) UpdateUser(ctx context.Context, user models.User) (models.Us
 
 func (r *UsersRepo) UpdateUserImage(ctx context.Context, uid uuid.UUID, imageName string) error {
 	utils.NameFuncLog()
-	_, err := r.db.ExecContext(ctx, "UPDATE users SET img=$1 WHERE uid=$2;", imageName, uid)
+	_, err := r.db.ExecContext(ctx, "INSERT INTO images (url, user_id) VALUES ($1, $2);", imageName, uid)
 	if err != nil {
 		r.logger.Info(err)
 		err = fmt.Errorf("error happened in db.Exec: %w", err)
 
+		return err
+	}
+
+	return nil
+}
+
+func (r *UsersRepo) DeleteUserImage(ctx context.Context, image string, uid uuid.UUID) error {
+	utils.NameFuncLog()
+	query := "DELETE FROM images WHERE url = $1 AND user_id = $2"
+
+	_, err := r.db.ExecContext(ctx, query, image, uid)
+	if err != nil {
+		r.logger.Info(err)
 		return err
 	}
 

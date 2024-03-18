@@ -155,3 +155,30 @@ func TestUpdateUserImage(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 }
+
+func TestDeleteUserImage(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	usecase := mock.NewMockUsersUsecase(ctrl)
+	mockLogger := zap.NewExample().Sugar()
+	handler := NewUsersHandler(usecase, mockLogger)
+
+	testUserID := uuid.New()
+	testRequest := struct {
+		URL string `json:"url"`
+	}{
+		URL: "http://example.com/image.jpg",
+	}
+
+	reqBody, _ := json.Marshal(testRequest)
+	r := httptest.NewRequest(http.MethodPost, "/delete-user-image", bytes.NewReader(reqBody))
+	r.Header.Set("uid", testUserID.String())
+	w := httptest.NewRecorder()
+
+	usecase.EXPECT().DeleteUserImage(gomock.Any(), testRequest.URL, testUserID).Return(nil).Times(1)
+
+	handler.DeleteUserImage(w, r)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}

@@ -50,6 +50,20 @@ func (mr *MockUsersUsecaseMockRecorder) DeleteUser(arg0, arg1, arg2 interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockUsersUsecase)(nil).DeleteUser), arg0, arg1, arg2)
 }
 
+// DeleteUserImage mocks base method.
+func (m *MockUsersUsecase) DeleteUserImage(arg0 context.Context, arg1 string, arg2 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteUserImage", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteUserImage indicates an expected call of DeleteUserImage.
+func (mr *MockUsersUsecaseMockRecorder) DeleteUserImage(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserImage", reflect.TypeOf((*MockUsersUsecase)(nil).DeleteUserImage), arg0, arg1, arg2)
+}
+
 // GetUser mocks base method.
 func (m *MockUsersUsecase) GetUser(arg0 context.Context, arg1 uuid.UUID) (models.User, error) {
 	m.ctrl.T.Helper()
@@ -159,6 +173,20 @@ func (m *MockUsersRepo) DeleteUser(arg0 context.Context, arg1 models.ChangePassw
 func (mr *MockUsersRepoMockRecorder) DeleteUser(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUser", reflect.TypeOf((*MockUsersRepo)(nil).DeleteUser), arg0, arg1, arg2)
+}
+
+// DeleteUserImage mocks base method.
+func (m *MockUsersRepo) DeleteUserImage(arg0 context.Context, arg1 string, arg2 uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteUserImage", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteUserImage indicates an expected call of DeleteUserImage.
+func (mr *MockUsersRepoMockRecorder) DeleteUserImage(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserImage", reflect.TypeOf((*MockUsersRepo)(nil).DeleteUserImage), arg0, arg1, arg2)
 }
 
 // GetSaltByUid mocks base method.

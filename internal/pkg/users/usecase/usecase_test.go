@@ -112,3 +112,21 @@ func TestDeleteUser(t *testing.T) {
 
 	assert.NoError(t, err)
 }
+
+func TestDeleteUserImage(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	repo := mock.NewMockUsersRepo(ctrl)
+	usecase := NewUsersUsecase(repo, zap.NewExample().Sugar())
+
+	ctx := context.Background()
+	uid := uuid.New()
+	image := "http://example.com/image.jpg"
+
+	repo.EXPECT().DeleteUserImage(ctx, image, uid).Return(nil)
+
+	err := usecase.DeleteUserImage(ctx, image, uid)
+
+	assert.NoError(t, err)
+}

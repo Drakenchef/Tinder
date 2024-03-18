@@ -73,8 +73,8 @@ func (u *UsersUsecase) UpdateUserImage(ctx context.Context, uid uuid.UUID, fileP
 	}
 
 	fileExtension := strings.TrimPrefix(fileType, "image/")
-
-	imageName := uid.String() + "." + fileExtension
+	imageUID := uuid.New()
+	imageName := imageUID.String() + "." + fileExtension
 
 	file, err := os.Create(imagePath + imageName)
 	if err != nil {
@@ -101,6 +101,14 @@ func (u *UsersUsecase) UpdateUserImage(ctx context.Context, uid uuid.UUID, fileP
 	profileInfo, err := u.usersRepo.GetUser(ctx, uid)
 
 	return profileInfo, nil
+}
+func (u *UsersUsecase) DeleteUserImage(ctx context.Context, image string, uid uuid.UUID) error {
+	utils.NameFuncLog()
+	err := u.usersRepo.DeleteUserImage(ctx, image, uid)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (u *UsersUsecase) UpdateUserPassword(ctx context.Context, request models.ChangePassword, uid uuid.UUID) error {

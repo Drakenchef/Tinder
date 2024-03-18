@@ -25,7 +25,7 @@ func TestCreateUser(t *testing.T) {
 	}
 	ctx := context.Background()
 	salt := "salt"
-	mock.ExpectExec("INSERT INTO users").WithArgs(sqlmock.AnyArg(), user.Login, user.Password, salt, sqlmock.AnyArg(), sqlmock.AnyArg()).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec("INSERT INTO users").WithArgs(sqlmock.AnyArg(), user.Login, user.Password, salt, sqlmock.AnyArg()).WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err = r.CreateUser(ctx, user, salt)
 	if err != nil {

@@ -140,6 +140,25 @@ func (h *UsersHandler) UpdateUserImage(w http.ResponseWriter, r *http.Request) {
 	userJSON, _ := json.Marshal(user)
 	w.Write(userJSON)
 }
+func (h *UsersHandler) DeleteUserImage(w http.ResponseWriter, r *http.Request) {
+	uidFromContext := r.Header.Get("uid")
+	h.logger.Info("get uid from context: ", uidFromContext)
+	uid, _ := uuid.Parse(uidFromContext)
+	var req struct {
+		URL string `json:"url" binding:"required"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.logger.Info(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if err := h.usersUsecase.DeleteUserImage(r.Context(), req.URL, uid); err != nil {
+		h.logger.Info(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
 func (h *UsersHandler) UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 	utils.NameFuncLog()
 	uidFromContext := r.Header.Get("uid")

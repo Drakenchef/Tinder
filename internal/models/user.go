@@ -9,10 +9,17 @@ type User struct {
 	UID         uuid.UUID `json:"uid" db:"uid"`
 	Login       string    `json:"login" binding:"required" validate:"required,min=6,alphanum"`
 	Password    string    `json:"-" binding:"required" validate:"required,min=6"`
-	Image       string    `json:"image" binding:"required"`
+	Images      []Image   `json:"images"`
 	Description string    `json:"description" binding:"required"`
 	Salt        string    `json:"-"`
 }
+
+type Image struct {
+	ID     int       `json:"id" db:"id"`
+	URL    string    `json:"url" binding:"required"`
+	UserID uuid.UUID `json:"userid" db:"userid"`
+}
+
 type Profile struct {
 	Login       string `json:"login" binding:"required" validate:"required,min=6,alphanum"`
 	Image       string `json:"image" binding:"required"`
