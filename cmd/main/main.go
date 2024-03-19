@@ -67,7 +67,7 @@ func main() {
 	cspXssMw := cspxssmw.NewCspXssMW()
 	hmackHashToken, _ := csrfToken.NewHMACKHashToken("zxczxczczxc", sugar)
 	mylogger := loggermw.NewLogger(sugar)
-	corsmw := corsmw.NewCorsMw()
+	corsmw := corsmw.NewCorsMw(sugar)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
 	r.Use(mylogger.Logging())
@@ -88,24 +88,25 @@ func main() {
 			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
 	}
 	user := r.PathPrefix("/user").Subrouter()
+	user.Use(Check)
 	user.Use(corsmw.CorsMiddleware)
 	user.Use(MiddlewareCSRFCheck(hmackHashToken, sugar))
 
 	{
 		user.Handle("/list", http.HandlerFunc(usersHandler.UsersList)).
-			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+			Methods(http.MethodGet, http.MethodOptions)
 		user.Handle("/profile", http.HandlerFunc(usersHandler.GetUser)).
-			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+			Methods(http.MethodGet, http.MethodOptions)
 		user.Handle("/update", http.HandlerFunc(usersHandler.UpdateUser)).
-			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+			Methods(http.MethodPost, http.MethodOptions)
 		user.Handle("/image", http.HandlerFunc(usersHandler.UpdateUserImage)).
-			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+			Methods(http.MethodPost, http.MethodOptions)
 		user.Handle("/deleteimage", http.HandlerFunc(usersHandler.DeleteUserImage)).
-			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+			Methods(http.MethodPost, http.MethodOptions)
 		user.Handle("/password", http.HandlerFunc(usersHandler.UpdateUserPassword)).
-			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+			Methods(http.MethodPost, http.MethodOptions)
 		user.Handle("/deleteuser", http.HandlerFunc(usersHandler.DeleteUser)).
-			Methods(http.MethodPost, http.MethodGet, http.MethodOptions)
+			Methods(http.MethodPost, http.MethodOptions)
 	}
 	likes := r.PathPrefix("/likes").Subrouter()
 	likes.Use(Check)
@@ -158,7 +159,7 @@ func MiddlewareCSRFCheck(hmackHashToken *csrfToken.HashToken, logger *zap.Sugare
 				logger.Info(csrfToken)
 				valid, _ := hmackHashToken.Check(uid, csrfToken)
 				if !valid {
-					http.Error(w, err.Error(), http.StatusForbidden)
+					w.WriteHeader(http.StatusForbidden)
 					return
 				}
 			}

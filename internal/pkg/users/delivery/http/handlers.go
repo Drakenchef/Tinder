@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/drakenchef/Tinder/internal/models"
-	"github.com/drakenchef/Tinder/internal/pkg/middleware/csrfmw"
 	"github.com/drakenchef/Tinder/internal/pkg/users"
 	"github.com/drakenchef/Tinder/internal/utils"
 	"github.com/google/uuid"
@@ -69,19 +68,19 @@ func (h *UsersHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	uidFromContext := r.Header.Get("uid")
-	h.logger.Info("get uid from context: ", uidFromContext)
-	uid, _ := uuid.Parse(uidFromContext)
-
-	tokenExpTime := int64(3600)
-
-	csrf, _ := csrfmw.NewHMACKHashToken("zxczxczczxc", h.logger)
-	csrfToken, err := csrf.Create(uid, tokenExpTime)
-	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("X-CSRF-Token", csrfToken)
+	//uidFromContext := r.Header.Get("uid")
+	//h.logger.Info("get uid from context: ", uidFromContext)
+	//uid, _ := uuid.Parse(uidFromContext)
+	//
+	//tokenExpTime := int64(3600)
+	//
+	//csrf, _ := csrfmw.NewHMACKHashToken("zxczxczczxc", h.logger)
+	//csrfToken, err := csrf.Create(uid, tokenExpTime)
+	//if err != nil {
+	//	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	//	return
+	//}
+	//w.Header().Set("X-CSRF-Token", csrfToken)
 	userJSON, err := json.Marshal(user)
 	w.WriteHeader(http.StatusOK)
 	w.Write(userJSON)
