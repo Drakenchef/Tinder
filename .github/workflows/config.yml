@@ -46,7 +46,7 @@ jobs:
           username: ${{secrets.USER}}
           key: ${{ secrets.PRIVATE_KEY }}
           script: cd /home/user/gitprojects/Tinder && git pull
-
+# 
       - name: Build containers #собираем код
         uses: appleboy/ssh-action@master
         with:
