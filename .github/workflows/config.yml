@@ -45,9 +45,7 @@ jobs:
           host: ${{ secrets.HOST }} #все данные лежат в секретах в репозитории
           username: ${{secrets.USER}}
           key: ${{ secrets.PRIVATE_KEY }}
-          # password: ${{secrets.PASSWORD}}
           script: cd /home/user/gitprojects/Tinder && git pull
-          # script: cd /home/user/gitprojects/Tinder && git pull 
 
       - name: Build containers #собираем код
         uses: appleboy/ssh-action@master
@@ -56,8 +54,6 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{secrets.USER}}
           key: ${{ secrets.PRIVATE_KEY }}
-          # 
-          # password: ${{secrets.PASSWORD}}
           script: 
             cd /home/user/gitprojects/Tinder && echo 'DB_NAME=${{ secrets.DB_NAME }}' > .env && echo 'DB_USER=${{ secrets.DB_USER }}' >> .env && echo 'DB_PASSWORD=${{ secrets.DB_PASSWORD }}'>> .env && echo 'CORS_HOST_NAME=${{ secrets.CORS_HOST_NAME }}' >> .env && docker compose build
           # script: cd /home/user/gitprojects/Tinder && sudo -S docker compose build <<< ${{secrets.PASSWORD}}
@@ -67,8 +63,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{secrets.USER}}
           key: ${{ secrets.PRIVATE_KEY }}
-          # password: ${{secrets.PASSWORD}}
           script: cd /home/user/gitprojects/Tinder&& docker compose down && docker compose up -d #-d освобождает консоль
-          # 
+
           # script: cd /home/user/gitprojects/Tinder&& sudo -S docker compose down <<< ${{secrets.PASSWORD}} && sudo -S docker compose up <<< ${{secrets.PASSWORD}} -d #-d освобождает консоль
   
