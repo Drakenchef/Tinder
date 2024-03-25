@@ -60,4 +60,3 @@ networks:
 
 volumes:
   images_vol:
-  certbot-etc:
