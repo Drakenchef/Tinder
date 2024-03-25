@@ -61,8 +61,8 @@ func (h *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 		Value:    token,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteStrictMode,
+		//Secure:   true,
+		//SameSite: http.SameSiteStrictMode,
 	}
 	http.SetCookie(w, &cookie)
 	w.Header().Set("Content-Type", "application/json")
