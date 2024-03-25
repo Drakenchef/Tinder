@@ -41,10 +41,10 @@ func (tk *HashToken) Create(uid uuid.UUID, tokenExpTime int64) (string, error) {
 	tokenData := strings.Split(token, ":")
 	tk.logger.Info("Data: ", tokenData, len(tokenData))
 
-	//tk.tokensMu.Lock()
-	//tk.tokens[token] = struct{}{}
-	//tk.tokensMu.Unlock()
-	//tk.logger.Info(tk.tokens)
+	tk.tokensMu.Lock()
+	tk.tokens[token] = struct{}{}
+	tk.tokensMu.Unlock()
+	tk.logger.Info("TOKENS: ", tk.tokens)
 	return token, nil
 }
 func (tk *HashToken) Check(uid uuid.UUID, inputToken string) (bool, error) {
@@ -57,6 +57,13 @@ func (tk *HashToken) Check(uid uuid.UUID, inputToken string) (bool, error) {
 	//}
 	//tk.tokensMu.RUnlock()
 
+	tk.tokensMu.Lock()
+	defer tk.tokensMu.Unlock()
+	_, found := tk.tokens[inputToken]
+	if found {
+		delete(tk.tokens, inputToken) // Удаление токена, если он должен быть одноразовым
+	}
+	tk.logger.Info("TOKENS: ", tk.tokens)
 	tk.logger.Info("csrf: ", inputToken)
 	if len(inputToken) == 0 {
 		return false, errors.New("0 len token")
