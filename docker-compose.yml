@@ -49,6 +49,7 @@ services:
       - images_vol:/app/images
       - /etc/letsencrypt/live/theverest.ru/fullchain.pem:/etc/nginx/ssl/fullchain.pem
       - /etc/letsencrypt/live/theverest.ru/privkey.pem:/etc/nginx/ssl/privkey.pem
+#      -
     depends_on:
       - backend
     networks:
