@@ -44,7 +44,8 @@ services:
       - "8080:80"
       - "8433:433"
     volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+#      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/default.conf:/etc/nginx/nginx.conf
       - ./frontend:/usr/share/nginx/html
       - images_vol:/app/images
       - /etc/letsencrypt:/etc/letsencrypt:ro
