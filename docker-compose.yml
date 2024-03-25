@@ -42,7 +42,7 @@ services:
     container_name: thetinder-nginx
     ports:
       - "8080:80"
-      - "8443:443"
+      - "8433:433"
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./frontend:/usr/share/nginx/html
