@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+option go_package = "github.com/drakenchef/Tinder/proto/gmodels;gmodels";
+
+package gmodels;
+
+import "google/protobuf/timestamp.proto";
+
+message User {
+  string UID = 1;
+  string Login = 2;
+  string Description = 3;
+  repeated Image Images = 4;
+}
+
+message Image {
+  int32 ID = 1;
+  string URL = 2;
+  string UserID = 3;
+}
+
+message Profile {
+  string Login = 1;
+  string Image = 2;
+  string Description = 3;
+}
+
+message SignInInput {
+  string Login = 1;
+  string Password = 2;
+}
+
+message ChangePassword {
+  string Password = 1;
+}
+
+message Likes {
+  string UIDFirstLike = 1;
+  string UIDSecondLike = 2;
+  google.protobuf.Timestamp Date = 3;
+  bool Mutual = 4;
+}
+
+message LikesUID {
+  string UIDFirstLike = 1;
+  string UIDSecondLike = 2;
+}

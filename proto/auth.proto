@@ -1,0 +1,37 @@
+syntax = "proto3";
+package auth;
+option go_package = "./internal/pkg/auth/delivery/grpc/gen/;gen";
+import "gmodels/gmodels.proto";
+
+service Auth {
+  rpc SignUp(SignUpRequest) returns (SignUpResponse) {}
+  rpc SignIn(SignInRequest) returns (SignInResponse) {}
+  rpc CheckAuth(CheckAuthRequest) returns (CheckAuthResponse) {}
+}
+
+message SignInRequest {
+  string Login = 1;
+  string Password = 2;
+}
+
+message SignInResponse {
+  string Token = 1;
+}
+
+message SignUpRequest {
+  string Login = 1;
+  string Password = 2;
+}
+
+message SignUpResponse {
+  bool Success = 1;
+  string Error = 2;
+}
+
+message CheckAuthRequest {
+  string Token = 1;
+}
+
+message CheckAuthResponse {
+  bool IsAuthenticated = 1;
+}

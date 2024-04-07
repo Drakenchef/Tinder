@@ -1,25 +1,5 @@
 version: "3.8"
 services:
-  backend:
-    env_file:
-      - .env
-    container_name: TheTinder
-    depends_on:
-      db:
-        condition: service_started
-    ports:
-      - "8000:8000"
-    build:
-      context: .
-      dockerfile: Dockerfile
-    volumes:
-      - ./configs:/out/configs
-      - ./.env:/out/.env
-      - images_vol:/app/images
-    restart: always
-    networks:
-      - my-network
-
   db:
     env_file:
       - .env
@@ -36,6 +16,126 @@ services:
     restart: always
     networks:
       - my-network
+
+  auth:
+    build:
+      context: .
+      dockerfile: build/auth.Dockerfile
+    ports:
+      - "8010:8010"
+      - "8011:8011"
+    volumes:
+      - ./configs:/out/configs
+      - ./.env:/out/.env
+      - type: bind
+        source: /var/log
+        target: /var/log
+    deploy:
+      replicas: 1
+      mode: replicated
+      restart_policy:
+        condition: on-failure
+    networks:
+      - my-network
+
+#  users:
+#    build:
+#      context: .
+#      dockerfile: build/users.Dockerfile
+#    ports:
+#      - "8020:8020"
+#      - "8021:8021"
+#    volumes:
+#      - type: bind
+#        source: /var/log
+#        target: /var/log
+#    deploy:
+#      replicas: 1
+#      mode: replicated
+#      restart_policy:
+#        condition: on-failure
+#    networks:
+#      - my-network
+#
+#  likes:
+#    build:
+#      context: .
+#      dockerfile: build/likes.Dockerfile
+#    ports:
+#      - "8030:8030"
+#      - "8031:8031"
+#    volumes:
+#      - type: bind
+#        source: /var/log
+#        target: /var/log
+#    deploy:
+#      replicas: 1
+#      mode: replicated
+#      restart_policy:
+#        condition: on-failure
+#    networks:
+#      - my-network
+
+
+  main:
+    env_file:
+      - .env
+    container_name: TheTinder
+    depends_on:
+      - db
+      - auth
+#      - users
+#      - likes
+    ports:
+      - "8000:8000"
+    build:
+      context: .
+      dockerfile: build/main.Dockerfile
+    volumes:
+      - ./configs:/out/configs
+      - ./.env:/out/.env
+      - images_vol:/app/images
+    restart: always
+    networks:
+      - my-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./metrics/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - my-network
+    depends_on:
+      - main
+      - auth
+    restart: always
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    ports:
+      - "9100:9100"
+    networks:
+      - my-network
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    networks:
+      - my-network
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: "securepassword"
+#    restart: always
+
+
   nginx:
     image: nginx:latest
     ports:
@@ -46,9 +146,9 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - images_vol:/app/images
-    restart: always
+#    restart: always
     depends_on:
-      - backend
+      - main
     networks:
       - my-network
 
@@ -59,3 +159,5 @@ networks:
 
 volumes:
   images_vol:
+  grafana_data:
+  prometheus_data:

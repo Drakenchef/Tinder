@@ -4,9 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	authGrpc "github.com/drakenchef/Tinder/internal/pkg/auth/delivery/grpc/gen"
 	authHandler "github.com/drakenchef/Tinder/internal/pkg/auth/delivery/http"
-	authRepo "github.com/drakenchef/Tinder/internal/pkg/auth/repo"
-	authUsecase "github.com/drakenchef/Tinder/internal/pkg/auth/usecase"
 	likesHandler "github.com/drakenchef/Tinder/internal/pkg/likes/delivery/http"
 	likesRepo "github.com/drakenchef/Tinder/internal/pkg/likes/repo"
 	likesUsecase "github.com/drakenchef/Tinder/internal/pkg/likes/usecase"
@@ -14,6 +13,7 @@ import (
 	"github.com/drakenchef/Tinder/internal/pkg/middleware/cspxssmw"
 	csrfToken "github.com/drakenchef/Tinder/internal/pkg/middleware/csrfmw"
 	"github.com/drakenchef/Tinder/internal/pkg/middleware/loggermw"
+	middleware "github.com/drakenchef/Tinder/internal/pkg/middleware/metrics"
 	usersHandler "github.com/drakenchef/Tinder/internal/pkg/users/delivery/http"
 	usersRepo "github.com/drakenchef/Tinder/internal/pkg/users/repo"
 	usersUsecase "github.com/drakenchef/Tinder/internal/pkg/users/usecase"
@@ -21,8 +21,12 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -52,9 +56,27 @@ func main() {
 	if err != nil {
 		sugar.Fatalf("failed to initialize db: %s", err.Error())
 	}
-	authRepo := authRepo.NewAuthRepo(db, sugar)
-	authUsecase := authUsecase.NewAuthUsecase(authRepo, sugar)
-	authHandler := authHandler.NewAuthHandler(authUsecase, sugar)
+
+	// Соединение с gRPC сервисом
+	authConn, err := grpc.Dial(
+		"auth:8010",
+		//":8010",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+
+	if err != nil {
+		log.Fatalf("cant connect to session grpc")
+	}
+
+	//было до grpc
+
+	//authRepo := authRepo.NewAuthRepo(db, sugar)
+	//authUsecase := authUsecase.NewAuthUsecase(authRepo, sugar)
+	//authHandler := authHandler.NewAuthHandler(authUsecase, sugar)
+
+	//после grpc
+	authClient := authGrpc.NewAuthClient(authConn)
+	authHandler := authHandler.NewAuthHandler(authClient, sugar)
 
 	usersRepo := usersRepo.NewUsersRepo(db, sugar)
 	usersUsecase := usersUsecase.NewUsersUsecase(usersRepo, sugar)
@@ -70,6 +92,12 @@ func main() {
 	corsmw := corsmw.NewCorsMw(sugar)
 
 	r := mux.NewRouter().PathPrefix("/api").Subrouter()
+
+	metricsMw := middleware.NewMetricsMiddleware()
+	metricsMw.Register(middleware.ServiceMainName)
+	r.PathPrefix("/metrics").Handler(promhttp.Handler())
+	r.Use(metricsMw.LogMetrics)
+
 	r.Use(mylogger.Logging())
 	r.Use(cspXssMw.MiddlewareCSP)
 	r.Use(cspXssMw.MiddlewareXSS)

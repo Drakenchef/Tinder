@@ -24,7 +24,7 @@ func (r *AuthRepo) CreateUser(ctx context.Context, user models.SignInInput, salt
 	uid := uuid.New()
 
 	_, err := r.db.ExecContext(ctx, "INSERT INTO users (uid, login, passwordhash, salt, description) VALUES ($1, $2, $3, $4, $5)",
-		uid, user.Login, user.Password, salt, " ")
+		uid, user.Login, user.Password, salt, "default")
 	if err != nil {
 		r.logger.Info(err)
 		return errors.New("failed to create user in database")

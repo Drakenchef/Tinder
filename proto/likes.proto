@@ -1,0 +1,27 @@
+syntax = "proto3";
+package likes;
+option go_package = "./internal/pkg/likes/delivery/grpc/gen/;gen";
+
+
+service Likes {
+  rpc LikeUser(LikeRequest) returns (LikeResponse) {}
+  rpc MutualLikeUser(MutualLikeRequest) returns (MutualLikeResponse) {}
+}
+
+message LikeRequest {
+  string UIDFirstLike = 1;
+  string UIDSecondLike = 2;
+}
+
+message LikeResponse {
+  bool Success = 1;
+}
+
+message MutualLikeRequest {
+  string UIDFirstLike = 1;
+  string UIDSecondLike = 2;
+}
+
+message MutualLikeResponse {
+  bool MutuallyLiked = 1;
+}

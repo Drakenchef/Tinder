@@ -1,0 +1,71 @@
+syntax = "proto3";
+package users;
+option go_package = "./internal/pkg/users/delivery/grpc/gen/;gen";
+
+import "google/protobuf/timestamp.proto";
+
+service Users {
+  rpc UsersList(UsersListRequest) returns (UsersListResponse) {}
+  rpc GetUser(GetUserRequest) returns (UserResponse) {}
+  rpc UpdateUser(User) returns (UserResponse) {}
+  rpc UpdateUserImage(UpdateUserImageRequest) returns (UserResponse) {}
+  rpc DeleteUserImage(DeleteUserImageRequest) returns (DeleteUserImageResponse) {}
+  rpc UpdateUserPassword(UpdateUserPasswordRequest) returns (UpdateUserPasswordResponse) {}
+  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse) {}
+}
+
+message User {
+  string id = 1;
+  string name = 2;
+  string email = 3;
+}
+
+message UsersListRequest {
+  string abcd = 1;
+}
+
+message UsersListResponse {
+  repeated User users = 1;
+}
+
+message GetUserRequest {
+  string uid = 1;
+}
+
+message UserResponse {
+  User user = 1;
+}
+
+message UpdateUserImageRequest {
+  string uid = 1;
+  bytes image = 2;
+  string fileFormat = 3;
+}
+
+message DeleteUserImageRequest {
+  string uid = 1;
+  string url = 2;
+}
+
+message DeleteUserImageResponse {
+  bool success = 1;
+}
+
+message UpdateUserPasswordRequest {
+  string uid = 1;
+  string oldPassword = 2;
+  string newPassword = 3;
+}
+
+message UpdateUserPasswordResponse {
+  bool success = 1;
+}
+
+message DeleteUserRequest {
+  string uid = 1;
+  string password = 2;
+}
+
+message DeleteUserResponse {
+  bool success = 1;
+}
